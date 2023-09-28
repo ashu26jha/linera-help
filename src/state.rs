@@ -17,7 +17,8 @@ pub struct NFTtoken {
 #[allow(dead_code)]
 
 impl NFTtoken {
-    pub async fn get_token_owner(&self, token: u64) -> Owner {
+    pub async fn get_token_owner(&mut self, token: u64) -> Owner {
+
         self.token_owner
             .get(&token)
             .await
@@ -26,6 +27,11 @@ impl NFTtoken {
     }
 
     pub async fn mint_nft(&mut self, token: u64, minter: Owner, token_uri: String) {
+
+        // Increaments the token_id
+        let a = self.token_counter.get();
+        self.token_counter.set(*a + 1);
+
         self.token_owner
             .insert(&token, minter)
             .expect("Couldn't insert in Token Owner");
@@ -36,12 +42,14 @@ impl NFTtoken {
     }
 
     pub async fn transfer_nft(&mut self, token: u64, new_owner: Owner) {
+        
         self.token_owner
             .insert(&token, new_owner)
             .expect("Couldn't transfer the NFT")
     }
 
     pub async fn approve_nft(&mut self, token: u64, to: Owner) {
+
         self.token_approval
             .insert(&token, to)
             .expect("Couldn't insert in approve")
