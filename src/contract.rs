@@ -5,7 +5,6 @@ mod state;
 use self::state::NFTtoken;
 use async_trait::async_trait;
 use thiserror::Error;
-use bcs::Error;
 use linera_sdk::{
     base::{SessionId, WithContractAbi, Owner},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
@@ -21,7 +20,7 @@ impl WithContractAbi for NFTtoken {
 
 #[async_trait]
 impl Contract for NFTtoken {
-    type Error = ContractError;
+    type Error = Error;
     type Storage = ViewStateStorage<Self>;
 
     async fn initialize(
@@ -49,6 +48,7 @@ impl Contract for NFTtoken {
             }
             Operation::Transfer { token_id, new_owner } => {
                 Self::check_account_authentication(&mut self, context.authenticated_signer, token_id).await?;
+                self.transfer_nft(token_id, new_owner).await;
                 Ok(ExecutionResult::default())
             }
         }
@@ -99,22 +99,23 @@ impl NFTtoken {
             return Ok(());
         }
 
-        Err(ContractError::IncorrectAuthentication)
+        Err(Error::IncorrectAuthentication)
     }
 }
 
 /// An error that can occur during the contract execution.
 #[derive(Debug, Error)]
-pub enum ContractError {
-    /// Failed to deserialize BCS bytes
+pub enum Error {
     #[error("Failed to deserialize BCS bytes")]
     BcsError(#[from] bcs::Error),
 
     /// Failed to deserialize JSON string
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
-    // Add more error variants here.
 
     #[error("Incorrect Authentication")]
     IncorrectAuthentication, // Add more error variants here.
+
+    #[error("Sessions not supported")]
+    SessionsNotSupported,
 }
