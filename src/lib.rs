@@ -43,4 +43,8 @@ pub enum Operation {
         token_id: u64,
         approved_for: Owner,
     },
+
+    Burn {
+        token_id: u64,
+    },
 }

@@ -18,7 +18,6 @@ pub struct NFTtoken {
 
 impl NFTtoken {
     pub async fn get_token_owner(&mut self, token: u64) -> Owner {
-
         self.token_owner
             .get(&token)
             .await
@@ -27,7 +26,6 @@ impl NFTtoken {
     }
 
     pub async fn mint_nft(&mut self, token: u64, minter: Owner, token_uri: String) {
-
         // Increaments the token_id
         let a = self.token_counter.get();
         self.token_counter.set(*a + 1);
@@ -42,14 +40,14 @@ impl NFTtoken {
     }
 
     pub async fn transfer_nft(&mut self, token: u64, new_owner: Owner) {
-        
+        // Transfer the NFT
         self.token_owner
             .insert(&token, new_owner)
             .expect("Couldn't transfer the NFT")
     }
 
     pub async fn approve_nft(&mut self, token: u64, to: Owner) {
-
+        // Approve the `to` to carry out the transaction
         self.token_approval
             .insert(&token, to)
             .expect("Couldn't insert in approve")
@@ -61,5 +59,15 @@ impl NFTtoken {
             .await
             .expect("Cant get")
             .unwrap()
+    }
+
+    pub async fn burn_nft(&mut self, token: u64) {
+        self.token_owner
+            .remove(&token)
+            .expect("Couldn't remove owner from map");
+
+        self.token_uri
+            .remove(&token)
+            .expect("Couldn't remove token URI")
     }
 }

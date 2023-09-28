@@ -74,7 +74,20 @@ impl Contract for NFTtoken {
                 // Checks for auth
 
                 self.approve_nft(token_id, approved_for).await;
-                // Approves the NFT 
+                // Approves the NFT
+
+                Ok(ExecutionResult::default())
+            }
+
+            Operation::Burn { token_id } => {
+                Self::check_account_authentication(
+                    &mut self,
+                    context.authenticated_signer,
+                    token_id,
+                )
+                .await?;
+
+                self.burn_nft(token_id).await;
 
                 Ok(ExecutionResult::default())
             }
