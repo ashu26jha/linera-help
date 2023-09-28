@@ -3,12 +3,14 @@
 mod state;
 
 use self::state::NFTtoken;
+use async_graphql::{EmptySubscription, Request, Response, Schema};
 use async_trait::async_trait;
-use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage, graphql::GraphQLMutationRoot};
+use linera_sdk::{
+    base::WithServiceAbi, graphql::GraphQLMutationRoot, QueryContext, Service, ViewStateStorage,
+};
 use nft::Operation;
 use std::sync::Arc;
 use thiserror::Error;
-use async_graphql::{EmptySubscription, Request, Response, Schema};
 
 linera_sdk::service!(NFTtoken);
 
@@ -43,6 +45,5 @@ pub enum ServiceError {
     /// Invalid query argument; could not deserialize request.
     #[error("Invalid query argument; could not deserialize request")]
     InvalidQuery(#[from] serde_json::Error),
-
     // Add error variants here.
 }

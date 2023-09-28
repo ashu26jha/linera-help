@@ -4,13 +4,13 @@ mod state;
 
 use self::state::NFTtoken;
 use async_trait::async_trait;
-use thiserror::Error;
 use linera_sdk::{
-    base::{SessionId, WithContractAbi, Owner},
+    base::{Owner, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
 use nft::Operation;
+use thiserror::Error;
 
 linera_sdk::contract!(NFTtoken);
 
@@ -36,7 +36,6 @@ impl Contract for NFTtoken {
         context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        
         match operation {
             Operation::Mint {
                 owner,
@@ -44,11 +43,39 @@ impl Contract for NFTtoken {
                 token_uri,
             } => {
                 self.mint_nft(token_id, owner, token_uri).await;
+
                 Ok(ExecutionResult::default())
             }
-            Operation::Transfer { token_id, new_owner } => {
-                Self::check_account_authentication(&mut self, context.authenticated_signer, token_id).await?;
+
+            Operation::Transfer {
+                token_id,
+                new_owner,
+            } => {
+                Self::check_account_authentication(
+                    &mut self,
+                    context.authenticated_signer,
+                    token_id,
+                )
+                .await?;
                 self.transfer_nft(token_id, new_owner).await;
+                Ok(ExecutionResult::default())
+            }
+
+            Operation::Approve {
+                token_id,
+                approved_for,
+            } => {
+                Self::check_account_authentication(
+                    &mut self,
+                    context.authenticated_signer,
+                    token_id,
+                )
+                .await?;
+                // Checks for auth
+
+                self.approve_nft(token_id, approved_for).await;
+                // Approves the NFT 
+
                 Ok(ExecutionResult::default())
             }
         }
@@ -90,12 +117,16 @@ impl NFTtoken {
     async fn check_account_authentication(
         &mut self,
         authenticated_signed: Option<Owner>,
-        token_id: u64
+        token_id: u64,
     ) -> Result<(), Error> {
-
         let old_owner: Owner = self.get_token_owner(token_id).await;
+        let approve = self.get_approvals(token_id).await;
 
         if authenticated_signed == Some(old_owner) {
+            return Ok(());
+        }
+
+        if authenticated_signed == Some(approve) {
             return Ok(());
         }
 

@@ -37,5 +37,10 @@ pub enum Operation {
     Transfer {
         token_id: u64,
         new_owner: Owner,
-    }
+    },
+
+    Approve {
+        token_id: u64,
+        approved_for: Owner,
+    },
 }
