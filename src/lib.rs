@@ -33,4 +33,9 @@ pub enum Operation {
         token_id: u64,
         token_uri: String,
     },
+
+    Transfer {
+        token_id: u64,
+        new_owner: Owner,
+    }
 }

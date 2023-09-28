@@ -4,13 +4,14 @@ mod state;
 
 use self::state::NFTtoken;
 use async_trait::async_trait;
+use thiserror::Error;
+use bcs::Error;
 use linera_sdk::{
-    base::{SessionId, WithContractAbi},
+    base::{SessionId, WithContractAbi, Owner},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
 use nft::Operation;
-use thiserror::Error;
 
 linera_sdk::contract!(NFTtoken);
 
@@ -33,7 +34,7 @@ impl Contract for NFTtoken {
 
     async fn execute_operation(
         &mut self,
-        _context: &OperationContext,
+        context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         
@@ -44,6 +45,10 @@ impl Contract for NFTtoken {
                 token_uri,
             } => {
                 self.mint_nft(token_id, owner, token_uri).await;
+                Ok(ExecutionResult::default())
+            }
+            Operation::Transfer { token_id, new_owner } => {
+                Self::check_account_authentication(&mut self, context.authenticated_signer, token_id).await?;
                 Ok(ExecutionResult::default())
             }
         }
@@ -79,6 +84,25 @@ impl Contract for NFTtoken {
     }
 }
 
+#[allow(dead_code)]
+
+impl NFTtoken {
+    async fn check_account_authentication(
+        &mut self,
+        authenticated_signed: Option<Owner>,
+        token_id: u64
+    ) -> Result<(), Error> {
+
+        let old_owner: Owner = self.get_token_owner(token_id).await;
+
+        if authenticated_signed == Some(old_owner) {
+            return Ok(());
+        }
+
+        Err(ContractError::IncorrectAuthentication)
+    }
+}
+
 /// An error that can occur during the contract execution.
 #[derive(Debug, Error)]
 pub enum ContractError {
@@ -90,4 +114,7 @@ pub enum ContractError {
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
     // Add more error variants here.
+
+    #[error("Incorrect Authentication")]
+    IncorrectAuthentication, // Add more error variants here.
 }

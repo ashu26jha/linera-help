@@ -35,4 +35,10 @@ impl NFTtoken {
             .expect("Couldn't insert in Token URI")
 
     }
+
+    pub async fn transfer_nft(&mut self, token: u64, new_owner: Owner){
+        self.token_owner
+            .insert(&token, new_owner)
+            .expect("Couldn't transfer the NFT")
+    }
 }
