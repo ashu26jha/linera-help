@@ -133,13 +133,13 @@ impl NFTtoken {
         token_id: u64,
     ) -> Result<(), Error> {
         let old_owner: Owner = self.get_token_owner(token_id).await;
-        let approve = self.get_approvals(token_id).await;
+        let approve:Owner = self.get_approvals(token_id).await;
 
         if authenticated_signed == Some(old_owner) {
             return Ok(());
         }
 
-        if authenticated_signed == Some(approve) {
+        else if authenticated_signed == Some(approve) {
             return Ok(());
         }
 

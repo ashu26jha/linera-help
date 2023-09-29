@@ -54,10 +54,25 @@ impl NFTtoken {
     }
 
     pub async fn get_approvals(&mut self, token: u64) -> Owner {
-        self.token_approval
+        let a = self.token_approval
+        .get(&token)
+        .await
+        .expect("Cant get");
+        
+        // Actually it panics when there is no approver
+        if a != None {
+            return self.token_approval
             .get(&token)
             .await
             .expect("Cant get")
+            .unwrap();
+        }
+
+        // Returning owner will also work as `if` block will fail because wrong approver wouldn't be an owner!
+        self.token_owner
+            .get(&token)
+            .await
+            .expect("Failure in the retrieval")
             .unwrap()
     }
 
