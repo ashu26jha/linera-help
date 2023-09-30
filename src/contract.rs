@@ -5,11 +5,11 @@ mod state;
 use self::state::NFTtoken;
 use async_trait::async_trait;
 use linera_sdk::{
-    base::{Owner, SessionId, WithContractAbi},
+    base::{ApplicationId, Owner, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use nft::Operation;
+use nft::{AccountOwner, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(NFTtoken);
@@ -30,20 +30,49 @@ impl Contract for NFTtoken {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         Ok(ExecutionResult::default())
     }
-
     async fn execute_operation(
         &mut self,
         context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
+            Operation::Approve {
+                token_id,
+                approved_for,
+            } => {
+                Self::check_account_authentication(
+                    &mut self,
+                    None,
+                    context.authenticated_signer,
+                    token_id,
+                )
+                .await?;
+
+                self.approve_nft(token_id, approved_for).await;
+                // Approves the NFT
+
+                Ok(ExecutionResult::default())
+            }
+            Operation::Burn { token_id } => {
+                Self::check_account_authentication(
+                    &mut self,
+                    None,
+                    context.authenticated_signer,
+                    token_id,
+                )
+                .await?;
+
+                self.burn_nft(token_id).await;
+
+                Ok(ExecutionResult::default())
+            }
+
             Operation::Mint {
                 owner,
                 token_id,
                 token_uri,
             } => {
                 self.mint_nft(token_id, owner, token_uri).await;
-
                 Ok(ExecutionResult::default())
             }
 
@@ -53,42 +82,12 @@ impl Contract for NFTtoken {
             } => {
                 Self::check_account_authentication(
                     &mut self,
+                    None,
                     context.authenticated_signer,
                     token_id,
                 )
                 .await?;
                 self.transfer_nft(token_id, new_owner).await;
-                Ok(ExecutionResult::default())
-            }
-
-            Operation::Approve {
-                token_id,
-                approved_for,
-            } => {
-                Self::check_account_authentication(
-                    &mut self,
-                    context.authenticated_signer,
-                    token_id,
-                )
-                .await?;
-                // Checks for auth
-
-                self.approve_nft(token_id, approved_for).await;
-                // Approves the NFT
-
-                Ok(ExecutionResult::default())
-            }
-
-            Operation::Burn { token_id } => {
-                Self::check_account_authentication(
-                    &mut self,
-                    context.authenticated_signer,
-                    token_id,
-                )
-                .await?;
-
-                self.burn_nft(token_id).await;
-
                 Ok(ExecutionResult::default())
             }
         }
@@ -124,42 +123,61 @@ impl Contract for NFTtoken {
     }
 }
 
-#[allow(dead_code)]
-
 impl NFTtoken {
     async fn check_account_authentication(
         &mut self,
-        authenticated_signed: Option<Owner>,
+        authenticated_application_id: Option<ApplicationId>,
+        authenticated_signer: Option<Owner>,
         token_id: u64,
     ) -> Result<(), Error> {
-        let old_owner: Owner = self.get_token_owner(token_id).await;
-        let approve:Owner = self.get_approvals(token_id).await;
+        let old_owner = self.get_token_owner(token_id).await;
+        let approve: AccountOwner = self.get_approvals(token_id).await;
 
-        if authenticated_signed == Some(old_owner) {
-            return Ok(());
+        if let AccountOwner::User(address) = old_owner {
+            if authenticated_signer == Some(address) {
+                Ok(())
+            } else {
+                if let AccountOwner::User(address) = approve {
+                    if authenticated_signer == Some(address) {
+                        Ok(())
+                    } else {
+                        Err(Error::IncorrectAuthentication)
+                    }
+                } else {
+                    Err(Error::IncorrectAuthentication)
+                }
+            }
+        } else if let AccountOwner::Application(id) = old_owner {
+            if authenticated_application_id == Some(id) {
+                Ok(())
+            } else {
+                if let AccountOwner::Application(id) = approve {
+                    if authenticated_application_id == Some(id) {
+                        return Ok(());
+                    } else {
+                        return Err(Error::IncorrectAuthentication);
+                    }
+                }
+                Err(Error::IncorrectAuthentication)
+            }
+        } else {
+            Err(Error::IncorrectAuthentication)
         }
-
-        else if authenticated_signed == Some(approve) {
-            return Ok(());
-        }
-
-        Err(Error::IncorrectAuthentication)
     }
 }
-
 /// An error that can occur during the contract execution.
 #[derive(Debug, Error)]
 pub enum Error {
+    /// Failed to deserialize BCS bytes
     #[error("Failed to deserialize BCS bytes")]
     BcsError(#[from] bcs::Error),
 
     /// Failed to deserialize JSON string
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
+    // Add more error variants here.
 
-    #[error("Incorrect Authentication")]
-    IncorrectAuthentication, // Add more error variants here.
-
-    #[error("Sessions not supported")]
-    SessionsNotSupported,
+    // Not allow to perform
+    #[error("The requested transfer is not correctly authenticated.")]
+    IncorrectAuthentication,
 }
