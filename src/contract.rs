@@ -9,7 +9,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use nft::{AccountOwner, Operation, ApplicationCall};
+use nft::{AccountOwner, ApplicationCall, Message, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(NFTtoken);
@@ -96,9 +96,17 @@ impl Contract for NFTtoken {
     async fn execute_message(
         &mut self,
         _context: &MessageContext,
-        _message: Self::Message,
+        message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        Ok(ExecutionResult::default())
+        match message {
+            Message::Transfer {
+                token_id,
+                target_account,
+            } => {
+                self.handle_message(token_id, target_account.owner).await;
+                Ok(ExecutionResult::default())
+            }
+        }
     }
 
     async fn handle_application_call(
@@ -109,15 +117,21 @@ impl Contract for NFTtoken {
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         match call {
-
-            ApplicationCall::Transfer {token_id, new_owner }=>{
-                Self::check_account_authentication(&mut self, None, context.authenticated_signer, token_id).await?;
+            ApplicationCall::Transfer {
+                token_id,
+                new_owner,
+            } => {
+                Self::check_account_authentication(
+                    &mut self,
+                    None,
+                    context.authenticated_signer,
+                    token_id,
+                )
+                .await?;
                 self.transfer_nft(token_id, new_owner).await;
-                Ok(ApplicationCallResult ::default())
-            }   
-            
+                Ok(ApplicationCallResult::default())
+            }
         }
-        
     }
 
     async fn handle_session_call(
@@ -133,7 +147,6 @@ impl Contract for NFTtoken {
 }
 
 impl NFTtoken {
-
     async fn check_account_authentication(
         &mut self,
         authenticated_application_id: Option<ApplicationId>,
