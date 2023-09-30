@@ -9,7 +9,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use nft::{AccountOwner, Operation};
+use nft::{AccountOwner, Operation, ApplicationCall};
 use thiserror::Error;
 
 linera_sdk::contract!(NFTtoken);
@@ -103,12 +103,21 @@ impl Contract for NFTtoken {
 
     async fn handle_application_call(
         &mut self,
-        _context: &CalleeContext,
-        _call: Self::ApplicationCall,
+        context: &CalleeContext,
+        call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        Ok(ApplicationCallResult::default())
+        match call {
+
+            ApplicationCall::Transfer {token_id, new_owner }=>{
+                Self::check_account_authentication(&mut self, None, context.authenticated_signer, token_id).await?;
+                self.transfer_nft(token_id, new_owner).await;
+                Ok(ApplicationCallResult ::default())
+            }   
+            
+        }
+        
     }
 
     async fn handle_session_call(
@@ -124,6 +133,7 @@ impl Contract for NFTtoken {
 }
 
 impl NFTtoken {
+
     async fn check_account_authentication(
         &mut self,
         authenticated_application_id: Option<ApplicationId>,

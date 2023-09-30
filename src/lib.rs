@@ -14,7 +14,7 @@ impl ContractAbi for NFTabi {
     type InitializationArgument = ();
     type Operation = Operation;
     type Message = ();
-    type ApplicationCall = ();
+    type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
     type Response = ();
@@ -146,4 +146,13 @@ where
     fn from(owner: T) -> Self {
         AccountOwner::User(owner.into())
     }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ApplicationCall {
+    Transfer {
+        token_id: u64,
+        new_owner: AccountOwner,
+    },
+
 }
