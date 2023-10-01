@@ -33,4 +33,12 @@ impl MarketPlace {
 
         self.listing_counter.set(curr_count + 1);
     }
+
+    pub async fn get_status(&self, listing_id: u64) -> bool {
+        self.listing_sold
+            .get(&listing_id)
+            .await
+            .expect("Couldnt fetch status")
+            .unwrap()
+    }
 }

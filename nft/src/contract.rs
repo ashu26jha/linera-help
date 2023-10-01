@@ -123,7 +123,7 @@ impl Contract for NFTtoken {
             } => {
                 Self::check_account_authentication(
                     &mut self,
-                    None,
+                    context.authenticated_caller_id,
                     context.authenticated_signer,
                     token_id,
                 )
