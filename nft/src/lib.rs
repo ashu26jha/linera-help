@@ -4,6 +4,7 @@ use async_graphql::{scalar, InputObject, Request, Response};
 use linera_sdk::{
     base::{ApplicationId, ChainId, ContractAbi, Owner, ServiceAbi},
     graphql::GraphQLMutationRoot,
+    views::crypto::CryptoHash,
 };
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
@@ -13,7 +14,7 @@ impl ContractAbi for NFTabi {
     type Parameters = ();
     type InitializationArgument = ();
     type Operation = Operation;
-    type Message = ();
+    type Message = Message;
     type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
@@ -33,6 +34,28 @@ impl ServiceAbi for NFTabi {
 pub struct Account {
     pub chain_id: ChainId,
     pub owner: AccountOwner,
+}
+
+/// A message.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum Message {
+    Transfer {
+        token_id: u64,
+        target_account: Account,
+    },
+}
+
+impl Default for Message {
+    fn default() -> Self {
+        // Provide a default Message variant here, e.g., using default values for fields
+        Message::Transfer {
+            token_id: 0, // Default token_id value
+            target_account: Account {
+                chain_id: ChainId(CryptoHash::from_str("S").unwrap()),
+                owner: AccountOwner::User(Owner(CryptoHash::from_str("S").unwrap())),
+            }, // Default Account value
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, GraphQLMutationRoot)]
@@ -154,5 +177,4 @@ pub enum ApplicationCall {
         token_id: u64,
         new_owner: AccountOwner,
     },
-
 }

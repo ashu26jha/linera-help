@@ -80,4 +80,8 @@ impl NFTtoken {
             .remove(&token)
             .expect("Couldn't remove token URI")
     }
+
+    pub async fn handle_message(&mut self, token: u64, owner: AccountOwner) {
+        self.token_owner.insert(&token, owner).expect("S")
+    }
 }
