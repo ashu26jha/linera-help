@@ -1,3 +1,4 @@
+use async_graphql::{Request, Response};
 use linera_sdk::{
     base::{Amount, ApplicationId, ContractAbi, ServiceAbi},
     graphql::GraphQLMutationRoot,
@@ -19,8 +20,8 @@ impl ContractAbi for MarketPlaceABI {
 
 impl ServiceAbi for MarketPlaceABI {
     type Parameters = ApplicationId<nft::NFTabi>;
-    type Query = ();
-    type QueryResponse = ();
+    type Query = Request;
+    type QueryResponse = Response;
 }
 
 #[derive(Debug, Deserialize, Serialize, GraphQLMutationRoot)]

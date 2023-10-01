@@ -3,8 +3,12 @@
 mod state;
 
 use self::state::MarketPlace;
+use async_graphql::{EmptySubscription, Request, Response, Schema};
 use async_trait::async_trait;
-use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
+use linera_sdk::{
+    base::WithServiceAbi, graphql::GraphQLMutationRoot, QueryContext, Service, ViewStateStorage,
+};
+use marketplace::Operation;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -22,9 +26,12 @@ impl Service for MarketPlace {
     async fn query_application(
         self: Arc<Self>,
         _context: &QueryContext,
-        _query: Self::Query,
-    ) -> Result<(), Self::Error> {
-        Err(ServiceError::QueriesNotSupported)
+        request: Request,
+    ) -> Result<Response, Self::Error> {
+        let schema =
+            Schema::build(self.clone(), Operation::mutation_root(), EmptySubscription).finish();
+        let response = schema.execute(request).await;
+        Ok(response)
     }
 }
 
