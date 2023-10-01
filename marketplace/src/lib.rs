@@ -1,5 +1,4 @@
 use linera_sdk::base::{ContractAbi, ServiceAbi};
-
 pub struct ApplicationAbi;
 
 impl ContractAbi for ApplicationAbi {

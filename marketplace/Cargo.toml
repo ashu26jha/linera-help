@@ -13,6 +13,7 @@ linera-views = "0.4.1"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.93"
 thiserror = "1.0.38"
+nft = { path = "../nft" }
 
 [dev-dependencies]
 linera-sdk = { version = "0.4.1", features = ["test"] }

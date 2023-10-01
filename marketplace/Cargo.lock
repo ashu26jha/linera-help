@@ -1590,6 +1590,7 @@ dependencies = [
  "futures",
  "linera-sdk",
  "linera-views",
+ "nft",
  "serde",
  "serde_json",
  "thiserror",
@@ -1694,6 +1695,21 @@ dependencies = [
  "mime",
  "spin",
  "version_check",
+]
+
+[[package]]
+name = "nft"
+version = "0.1.0"
+dependencies = [
+ "async-graphql",
+ "async-trait",
+ "bcs",
+ "futures",
+ "linera-sdk",
+ "linera-views",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
