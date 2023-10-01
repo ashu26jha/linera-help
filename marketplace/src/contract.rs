@@ -2,13 +2,14 @@
 mod state;
 use self::state::MarketPlace;
 use async_trait::async_trait;
+use fungible::FungibleTokenAbi;
 use linera_sdk::{
     base::{ApplicationId, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
 use marketplace::Operation;
-use nft::{NFTabi, Account};
+use nft::{Account, NFTabi};
 use thiserror::Error;
 
 linera_sdk::contract!(MarketPlace);
@@ -81,7 +82,10 @@ impl Contract for MarketPlace {
 
 impl MarketPlace {
     fn nft_id() -> Result<ApplicationId<NFTabi>, Error> {
-        Self::parameters()
+        let hello: Result<(ApplicationId<NFTabi>, ApplicationId<FungibleTokenAbi>), Error> =
+            Self::parameters();
+        let result_nft_id: Result<ApplicationId<NFTabi>, Error> = hello.map(|(nft_id, _)| nft_id);
+        result_nft_id
     }
 
     async fn buy_nft(&mut self, listing_id: u64, new_owner: Account) -> Result<(), Error> {

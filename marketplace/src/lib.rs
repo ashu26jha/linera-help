@@ -8,7 +8,10 @@ use nft::Account;
 use serde::{Deserialize, Serialize};
 
 impl ContractAbi for MarketPlaceABI {
-    type Parameters = ApplicationId<nft::NFTabi>;
+    type Parameters = (
+        ApplicationId<nft::NFTabi>,
+        ApplicationId<fungible::FungibleTokenAbi>,
+    );
     type InitializationArgument = ();
     type Operation = Operation;
     type Message = ();
@@ -19,7 +22,10 @@ impl ContractAbi for MarketPlaceABI {
 }
 
 impl ServiceAbi for MarketPlaceABI {
-    type Parameters = ApplicationId<nft::NFTabi>;
+    type Parameters = (
+        ApplicationId<nft::NFTabi>,
+        ApplicationId<fungible::FungibleTokenAbi>,
+    );
     type Query = Request;
     type QueryResponse = Response;
 }

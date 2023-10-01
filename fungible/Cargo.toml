@@ -1,5 +1,5 @@
 [package]
-name = "marketplace"
+name = "fungible"
 version = "0.1.0"
 edition = "2021"
 
@@ -13,19 +13,17 @@ linera-views = "0.4.1"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.93"
 thiserror = "1.0.38"
-nft = { path = "../nft" }
-fungible = { path = "../fungible" }
 
 [dev-dependencies]
 linera-sdk = { version = "0.4.1", features = ["test"] }
 webassembly-test = "0.1.0"
 
 [[bin]]
-name = "marketplace_contract"
+name = "fungible_contract"
 path = "src/contract.rs"
 
 [[bin]]
-name = "marketplace_service"
+name = "fungible_service"
 path = "src/service.rs"
 
 [profile.release]
