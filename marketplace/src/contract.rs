@@ -8,7 +8,7 @@ use linera_sdk::{
     OperationContext, SessionCallResult, ViewStateStorage,
 };
 use marketplace::Operation;
-use nft::{AccountOwner, NFTabi};
+use nft::{NFTabi, Account};
 use thiserror::Error;
 
 linera_sdk::contract!(MarketPlace);
@@ -84,7 +84,7 @@ impl MarketPlace {
         Self::parameters()
     }
 
-    async fn buy_nft(&mut self, listing_id: u64, new_owner: AccountOwner) -> Result<(), Error> {
+    async fn buy_nft(&mut self, listing_id: u64, new_owner: Account) -> Result<(), Error> {
         let call = nft::ApplicationCall::Transfer {
             token_id: listing_id,
             new_owner: new_owner,

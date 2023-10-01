@@ -4,7 +4,7 @@ use linera_sdk::{
     graphql::GraphQLMutationRoot,
 };
 pub struct MarketPlaceABI;
-use nft::AccountOwner;
+use nft::{AccountOwner, Account};
 use serde::{Deserialize, Serialize};
 
 impl ContractAbi for MarketPlaceABI {
@@ -28,5 +28,5 @@ impl ServiceAbi for MarketPlaceABI {
 pub enum Operation {
     List { token_id: u64, price: Amount },
 
-    Buy { list_id: u64, buyer: AccountOwner },
+    Buy { list_id: u64, buyer: Account },
 }
