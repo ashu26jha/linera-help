@@ -4,7 +4,7 @@ use linera_sdk::{
     graphql::GraphQLMutationRoot,
 };
 pub struct MarketPlaceABI;
-use nft::{AccountOwner, Account};
+use nft::Account;
 use serde::{Deserialize, Serialize};
 
 impl ContractAbi for MarketPlaceABI {
