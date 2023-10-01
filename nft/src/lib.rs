@@ -43,6 +43,10 @@ pub enum Message {
         token_id: u64,
         target_account: Account,
     },
+    Recieve {
+        token_id: u64,
+        target_account: AccountOwner,
+    },
 }
 
 impl Default for Message {
@@ -70,7 +74,7 @@ pub enum Operation {
 
     Transfer {
         token_id: u64,
-        new_owner: AccountOwner,
+        new_owner: Account,
     },
 
     Approve {
@@ -175,6 +179,6 @@ where
 pub enum ApplicationCall {
     Transfer {
         token_id: u64,
-        new_owner: AccountOwner,
+        new_owner: Account,
     },
 }
