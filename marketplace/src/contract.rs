@@ -2,23 +2,24 @@
 
 mod state;
 
-use self::state::Application;
+use self::state::MarketPlace;
 use async_trait::async_trait;
 use linera_sdk::{
     base::{SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use marketplace::Operation;
 use thiserror::Error;
 
-linera_sdk::contract!(Application);
+linera_sdk::contract!(MarketPlace);
 
-impl WithContractAbi for Application {
-    type Abi = marketplace::ApplicationAbi;
+impl WithContractAbi for MarketPlace {
+    type Abi = marketplace::MarketPlaceABI;
 }
 
 #[async_trait]
-impl Contract for Application {
+impl Contract for MarketPlace {
     type Error = ContractError;
     type Storage = ViewStateStorage<Self>;
 
@@ -33,8 +34,15 @@ impl Contract for Application {
     async fn execute_operation(
         &mut self,
         _context: &OperationContext,
-        _operation: Self::Operation,
+        operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        #[warn(unused_variables)]
+        match operation {
+            Operation::Buy { list_id } => {}
+            Operation::List { token_id, price } => {
+                self.add_listings(price, token_id).await;
+            }
+        }
         Ok(ExecutionResult::default())
     }
 
@@ -78,6 +86,5 @@ pub enum ContractError {
     /// Failed to deserialize JSON string
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
-
     // Add more error variants here.
 }

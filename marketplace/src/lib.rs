@@ -1,10 +1,14 @@
-use linera_sdk::base::{ContractAbi, ServiceAbi};
-pub struct ApplicationAbi;
+use linera_sdk::{
+    base::{Amount, ApplicationId, ContractAbi, ServiceAbi},
+    graphql::GraphQLMutationRoot,
+};
+pub struct MarketPlaceABI;
+use serde::{Deserialize, Serialize};
 
-impl ContractAbi for ApplicationAbi {
-    type Parameters = ();
+impl ContractAbi for MarketPlaceABI {
+    type Parameters = ApplicationId<nft::NFTabi>;
     type InitializationArgument = ();
-    type Operation = ();
+    type Operation = Operation;
     type Message = ();
     type ApplicationCall = ();
     type SessionCall = ();
@@ -12,8 +16,15 @@ impl ContractAbi for ApplicationAbi {
     type Response = ();
 }
 
-impl ServiceAbi for ApplicationAbi {
-    type Parameters = ();
+impl ServiceAbi for MarketPlaceABI {
+    type Parameters = ApplicationId<nft::NFTabi>;
     type Query = ();
     type QueryResponse = ();
+}
+
+#[derive(Debug, Deserialize, Serialize, GraphQLMutationRoot)]
+pub enum Operation {
+    List { token_id: u64, price: Amount },
+
+    Buy { list_id: u64 },
 }

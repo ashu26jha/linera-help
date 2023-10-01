@@ -2,20 +2,20 @@
 
 mod state;
 
-use self::state::Application;
+use self::state::MarketPlace;
 use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
 use thiserror::Error;
 
-linera_sdk::service!(Application);
+linera_sdk::service!(MarketPlace);
 
-impl WithServiceAbi for Application {
-    type Abi = marketplace::ApplicationAbi;
+impl WithServiceAbi for MarketPlace {
+    type Abi = marketplace::MarketPlaceABI;
 }
 
 #[async_trait]
-impl Service for Application {
+impl Service for MarketPlace {
     type Error = ServiceError;
     type Storage = ViewStateStorage<Self>;
 
@@ -38,6 +38,5 @@ pub enum ServiceError {
     /// Invalid query argument; could not deserialize request.
     #[error("Invalid query argument; could not deserialize request")]
     InvalidQuery(#[from] serde_json::Error),
-
     // Add error variants here.
 }
