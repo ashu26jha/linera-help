@@ -4,7 +4,8 @@
 #![cfg_attr(target_arch = "wasm32", no_main)]
 
 mod state;
-
+use log::info;
+use log::log;
 use self::state::FungibleToken;
 use async_trait::async_trait;
 use fungible::{
@@ -86,9 +87,12 @@ impl Contract for FungibleToken {
         context: &MessageContext,
         message: Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        info!("Message Recieved BC");
         match message {
             Message::Credit { owner, amount } => {
-                self.credit(owner, amount).await;
+                info!("Crediting");
+                self.credit(&owner, amount).await;
+                info!("Credited");
                 Ok(ExecutionResult::default())
             }
             Message::Withdraw {
@@ -130,6 +134,7 @@ impl Contract for FungibleToken {
                     context.authenticated_signer,
                     owner,
                 )?;
+                info!("Debiting");
                 self.debit(owner, amount).await?;
                 Ok(self
                     .finish_transfer_to_destination(amount, destination)
@@ -232,6 +237,7 @@ impl FungibleToken {
         let mut result = ApplicationCallResult::default();
         match destination {
             Destination::Account(account) => {
+                info!("Destination of type account");
                 result.execution_result = self.finish_transfer_to_account(amount, account).await;
             }
             Destination::NewSession => {
@@ -248,9 +254,11 @@ impl FungibleToken {
         account: Account,
     ) -> ExecutionResult<Message> {
         if account.chain_id == system_api::current_chain_id() {
-            self.credit(account.owner, amount).await;
+            info!("Same chain");
+            self.credit(&account.owner, amount).await;
             ExecutionResult::default()
         } else {
+            info!("Different chain");
             let message = Message::Credit {
                 owner: account.owner,
                 amount,

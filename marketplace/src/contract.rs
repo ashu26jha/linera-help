@@ -6,8 +6,9 @@ use fungible::{Destination, FungibleAccountOwner, FungibleTokenAbi, Account};
 use linera_sdk::{
     base::{ApplicationId, SessionId, WithContractAbi, Amount},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
-    OperationContext, SessionCallResult, ViewStateStorage, contract::system_api,
+    OperationContext, SessionCallResult, ViewStateStorage
 };
+use log::info;
 use marketplace::Operation;
 // use nft::{Account, AccountOwner, NFTabi};
 use thiserror::Error;
@@ -39,9 +40,11 @@ impl Contract for MarketPlace {
         match operation {
             Operation::Buy { 
                 owner,
-                amount 
+                amount ,
+                destination
             } => {
-                self.execute_pledge_with_account(owner, amount).await?;
+                let destination = Destination::Account(destination);
+                self.execute_pledge_with_account(owner, amount, destination).await?;
             }
             Operation::List { token_id, price } => {
                 self.add_listings(price, token_id).await;
@@ -81,9 +84,9 @@ impl Contract for MarketPlace {
 }
 
 impl MarketPlace {
-    fn fungible_id() -> Result<ApplicationId<FungibleTokenAbi>, Error> {
-        let hello = Self::parameters();
 
+    fn fungible_id() -> Result<ApplicationId<FungibleTokenAbi>, Error> {
+        let hello:Result<ApplicationId<FungibleTokenAbi>, Error>  = Self::parameters();
         hello
     }
 
@@ -98,17 +101,14 @@ impl MarketPlace {
         &mut self,
         owner: FungibleAccountOwner,
         amount: Amount,
-    ) -> Result<(), Error> {
-        let account = Account {
-            chain_id: system_api::current_chain_id(),
-            owner: FungibleAccountOwner::Application(system_api::current_application_id()),
-        };
-        let destination = Destination::Account(account);
+        destination: Destination
+    ) -> Result<(), Error> {    
         let transfer = fungible::ApplicationCall::Transfer {
             owner,
             amount,
             destination,
         };
+        
         self.call_application(true, Self::fungible_id()?, &transfer, vec![])
             .await?;
         Ok(())
@@ -118,8 +118,10 @@ impl MarketPlace {
         &mut self,
         owner: FungibleAccountOwner,
         amount: Amount,
+        destination: Destination,
     )->Result<(), Error>  {
-        self.receive_from_account(owner, amount).await?;
+
+        self.receive_from_account(owner, amount, destination).await?;
         Ok(())
     }
 

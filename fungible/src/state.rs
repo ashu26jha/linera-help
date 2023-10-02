@@ -7,6 +7,7 @@ use linera_sdk::{
     views::{MapView, ViewStorageContext},
 };
 use linera_views::views::{GraphQLView, RootView};
+use log::info;
 use thiserror::Error;
 
 /// The application state.
@@ -29,6 +30,7 @@ impl FungibleToken {
 
     /// Obtains the balance for an `account`.
     pub(crate) async fn balance(&self, account: &FungibleAccountOwner) -> Amount {
+        info!("Account, {:?}", account);
         self.accounts
             .get(account)
             .await
@@ -37,9 +39,12 @@ impl FungibleToken {
     }
 
     /// Credits an `account` with the provided `amount`.
-    pub(crate) async fn credit(&mut self, account: FungibleAccountOwner, amount: Amount) {
+    pub(crate) async fn credit(&mut self, account: &FungibleAccountOwner, amount: Amount) {
         let mut balance = self.balance(&account).await;
+        info!("Account, {:?}", account);
+        info!("Balance before {}",balance);
         balance.saturating_add_assign(amount);
+        info!("Balance after {}",balance);
         self.accounts
             .insert(&account, balance)
             .expect("Failed insert statement");

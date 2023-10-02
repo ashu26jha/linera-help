@@ -1,11 +1,10 @@
 use async_graphql::{Request, Response};
-use fungible::{Destination, FungibleAccountOwner};
+use fungible::{FungibleAccountOwner, Account};
 use linera_sdk::{
     base::{Amount, ApplicationId, ContractAbi, ServiceAbi},
     graphql::GraphQLMutationRoot,
 };
 pub struct MarketPlaceABI;
-use nft::Account;
 use serde::{Deserialize, Serialize};
 
 impl ContractAbi for MarketPlaceABI {
@@ -35,5 +34,6 @@ pub enum Operation {
     Buy {
         owner: FungibleAccountOwner,
         amount: Amount,
+        destination: Account,
     },
 }
