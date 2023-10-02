@@ -39,7 +39,7 @@ impl ServiceAbi for FungibleTokenAbi {
 pub enum Operation {
     /// A transfer from a (locally owned) account to a (possibly remote) account.
     Transfer {
-        owner: AccountOwner,
+        owner: FungibleAccountOwner,
         amount: Amount,
         target_account: Account,
     },
@@ -57,11 +57,14 @@ pub enum Operation {
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Message {
     /// Credit the given account.
-    Credit { owner: AccountOwner, amount: Amount },
+    Credit {
+        owner: FungibleAccountOwner,
+        amount: Amount,
+    },
 
     /// Withdraw from the given account and starts a transfer to the target account.
     Withdraw {
-        owner: AccountOwner,
+        owner: FungibleAccountOwner,
         amount: Amount,
         target_account: Account,
     },
@@ -71,10 +74,10 @@ pub enum Message {
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ApplicationCall {
     /// A request for an account balance.
-    Balance { owner: AccountOwner },
+    Balance { owner: FungibleAccountOwner },
     /// A transfer from an account.
     Transfer {
-        owner: AccountOwner,
+        owner: FungibleAccountOwner,
         amount: Amount,
         destination: Destination,
     },
@@ -98,28 +101,28 @@ pub enum SessionCall {
     // },
 }
 
-scalar!(AccountOwner);
+scalar!(FungibleAccountOwner);
 
 /// An account owner.
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum AccountOwner {
+pub enum FungibleAccountOwner {
     /// An account owned by a user.
     User(Owner),
     /// An account for an application.
     Application(ApplicationId),
 }
 
-impl Serialize for AccountOwner {
+impl Serialize for FungibleAccountOwner {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         match self {
-            AccountOwner::User(owner) => {
+            FungibleAccountOwner::User(owner) => {
                 let key = format!("User:{}", owner);
                 serializer.serialize_str(&key)
             }
-            AccountOwner::Application(app_id) => {
+            FungibleAccountOwner::Application(app_id) => {
                 let key = format!("Application:{}", app_id);
                 serializer.serialize_str(&key)
             }
@@ -127,18 +130,18 @@ impl Serialize for AccountOwner {
     }
 }
 
-impl<'de> Deserialize<'de> for AccountOwner {
+impl<'de> Deserialize<'de> for FungibleAccountOwner {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct AccountOwnerVisitor;
+        struct FungibleAccountOwnerVisitor;
 
-        impl<'de> serde::de::Visitor<'de> for AccountOwnerVisitor {
-            type Value = AccountOwner;
+        impl<'de> serde::de::Visitor<'de> for FungibleAccountOwnerVisitor {
+            type Value = FungibleAccountOwner;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a string representing an AccountOwner")
+                formatter.write_str("a string representing an FungibleAccountOwner")
             }
 
             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
@@ -158,7 +161,7 @@ impl<'de> Deserialize<'de> for AccountOwner {
                                 parts[1]
                             ))
                         })?;
-                        Ok(AccountOwner::User(owner))
+                        Ok(FungibleAccountOwner::User(owner))
                     }
                     "Application" => {
                         let app_id = ApplicationId::from_str(parts[1]).map_err(|_| {
@@ -167,28 +170,28 @@ impl<'de> Deserialize<'de> for AccountOwner {
                                 parts[1]
                             ))
                         })?;
-                        Ok(AccountOwner::Application(app_id))
+                        Ok(FungibleAccountOwner::Application(app_id))
                     }
                     _ => Err(Error::unknown_variant(parts[0], &["User", "Application"])),
                 }
             }
         }
-        deserializer.deserialize_str(AccountOwnerVisitor)
+        deserializer.deserialize_str(FungibleAccountOwnerVisitor)
     }
 }
 
-impl<T> From<T> for AccountOwner
+impl<T> From<T> for FungibleAccountOwner
 where
     T: Into<Owner>,
 {
     fn from(owner: T) -> Self {
-        AccountOwner::User(owner.into())
+        FungibleAccountOwner::User(owner.into())
     }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
-    pub accounts: BTreeMap<AccountOwner, Amount>,
+    pub accounts: BTreeMap<FungibleAccountOwner, Amount>,
 }
 
 /// An account.
@@ -197,7 +200,7 @@ pub struct InitialState {
 )]
 pub struct Account {
     pub chain_id: ChainId,
-    pub owner: AccountOwner,
+    pub owner: FungibleAccountOwner,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -211,12 +214,16 @@ scalar!(Destination);
 /// A builder type for constructing the initial state of the application.
 #[derive(Debug, Default)]
 pub struct InitialStateBuilder {
-    account_balances: BTreeMap<AccountOwner, Amount>,
+    account_balances: BTreeMap<FungibleAccountOwner, Amount>,
 }
 
 impl InitialStateBuilder {
     /// Adds an account to the initial state of the application.
-    pub fn with_account(mut self, account: AccountOwner, balance: impl Into<Amount>) -> Self {
+    pub fn with_account(
+        mut self,
+        account: FungibleAccountOwner,
+        balance: impl Into<Amount>,
+    ) -> Self {
         self.account_balances.insert(account, balance.into());
         self
     }

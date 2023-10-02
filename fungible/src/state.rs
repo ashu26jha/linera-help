@@ -1,7 +1,7 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use fungible::{AccountOwner, InitialState};
+use fungible::{FungibleAccountOwner, InitialState};
 use linera_sdk::{
     base::Amount,
     views::{MapView, ViewStorageContext},
@@ -13,7 +13,7 @@ use thiserror::Error;
 #[derive(RootView, GraphQLView)]
 #[view(context = "ViewStorageContext")]
 pub struct FungibleToken {
-    accounts: MapView<AccountOwner, Amount>,
+    accounts: MapView<FungibleAccountOwner, Amount>,
 }
 
 #[allow(dead_code)]
@@ -28,7 +28,7 @@ impl FungibleToken {
     }
 
     /// Obtains the balance for an `account`.
-    pub(crate) async fn balance(&self, account: &AccountOwner) -> Amount {
+    pub(crate) async fn balance(&self, account: &FungibleAccountOwner) -> Amount {
         self.accounts
             .get(account)
             .await
@@ -37,7 +37,7 @@ impl FungibleToken {
     }
 
     /// Credits an `account` with the provided `amount`.
-    pub(crate) async fn credit(&mut self, account: AccountOwner, amount: Amount) {
+    pub(crate) async fn credit(&mut self, account: FungibleAccountOwner, amount: Amount) {
         let mut balance = self.balance(&account).await;
         balance.saturating_add_assign(amount);
         self.accounts
@@ -48,7 +48,7 @@ impl FungibleToken {
     /// Tries to debit the requested `amount` from an `account`.
     pub(crate) async fn debit(
         &mut self,
-        account: AccountOwner,
+        account: FungibleAccountOwner,
         amount: Amount,
     ) -> Result<(), InsufficientBalanceError> {
         let mut balance = self.balance(&account).await;

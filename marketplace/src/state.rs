@@ -41,4 +41,12 @@ impl MarketPlace {
             .expect("Couldnt fetch status")
             .unwrap()
     }
+
+    pub async fn get_price(&self, listing_id: u64) -> Amount {
+        self.listings_price
+            .get(&listing_id)
+            .await
+            .expect("Couldn't fetch price")
+            .unwrap()
+    }
 }

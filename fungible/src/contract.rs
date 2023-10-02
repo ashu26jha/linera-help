@@ -8,7 +8,7 @@ mod state;
 use self::state::FungibleToken;
 use async_trait::async_trait;
 use fungible::{
-    Account, AccountOwner, ApplicationCall, Destination, Message, Operation, SessionCall,
+    Account, ApplicationCall, Destination, FungibleAccountOwner, Message, Operation, SessionCall,
 };
 use linera_sdk::{
     base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
@@ -39,7 +39,7 @@ impl Contract for FungibleToken {
         if state.accounts.is_empty() {
             if let Some(owner) = context.authenticated_signer {
                 state.accounts.insert(
-                    AccountOwner::User(owner),
+                    FungibleAccountOwner::User(owner),
                     Amount::from_str("1000000").unwrap(),
                 );
             }
@@ -173,11 +173,13 @@ impl FungibleToken {
     fn check_account_authentication(
         authenticated_application_id: Option<ApplicationId>,
         authenticated_signer: Option<Owner>,
-        owner: AccountOwner,
+        owner: FungibleAccountOwner,
     ) -> Result<(), Error> {
         match owner {
-            AccountOwner::User(address) if authenticated_signer == Some(address) => Ok(()),
-            AccountOwner::Application(id) if authenticated_application_id == Some(id) => Ok(()),
+            FungibleAccountOwner::User(address) if authenticated_signer == Some(address) => Ok(()),
+            FungibleAccountOwner::Application(id) if authenticated_application_id == Some(id) => {
+                Ok(())
+            }
             _ => Err(Error::IncorrectAuthentication),
         }
     }

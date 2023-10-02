@@ -2,14 +2,14 @@
 mod state;
 use self::state::MarketPlace;
 use async_trait::async_trait;
-use fungible::FungibleTokenAbi;
+use fungible::{Destination, FungibleAccountOwner, FungibleTokenAbi};
 use linera_sdk::{
     base::{ApplicationId, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
 use marketplace::Operation;
-use nft::{Account, NFTabi};
+use nft::{Account, AccountOwner, NFTabi};
 use thiserror::Error;
 
 linera_sdk::contract!(MarketPlace);
@@ -37,9 +37,24 @@ impl Contract for MarketPlace {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::Buy { buyer, list_id } => {
+            Operation::Buy {
+                buyer,
+                list_id,
+                destination,
+            } => {
                 let nft_status = self.get_status(list_id).await;
                 if nft_status {
+                    // First we need to transfer the money to the owner
+                    let buyer_account_owner: nft::AccountOwner = buyer.owner;
+                    let buyer_fungible = match buyer_account_owner {
+                        AccountOwner::User(owner) => FungibleAccountOwner::User(owner),
+                        AccountOwner::Application(application_id) => {
+                            FungibleAccountOwner::Application(application_id)
+                        }
+                    };
+                    self.transfer_money(buyer_fungible, destination, list_id)
+                        .await?;
+                    //Transfer of NFT
                     self.buy_nft(list_id, buyer).await?;
                 }
             }
@@ -81,11 +96,40 @@ impl Contract for MarketPlace {
 }
 
 impl MarketPlace {
+    fn fungible_id() -> Result<ApplicationId<FungibleTokenAbi>, Error> {
+        let hello: Result<(ApplicationId<NFTabi>, ApplicationId<FungibleTokenAbi>), Error> =
+            Self::parameters();
+
+        let result_fungible_id: Result<ApplicationId<FungibleTokenAbi>, Error> =
+            hello.map(|(_, fungible_id)| fungible_id);
+
+        result_fungible_id
+    }
+
     fn nft_id() -> Result<ApplicationId<NFTabi>, Error> {
         let hello: Result<(ApplicationId<NFTabi>, ApplicationId<FungibleTokenAbi>), Error> =
             Self::parameters();
         let result_nft_id: Result<ApplicationId<NFTabi>, Error> = hello.map(|(nft_id, _)| nft_id);
         result_nft_id
+    }
+
+    async fn transfer_money(
+        &mut self,
+        buyer: FungibleAccountOwner,
+        destination: Destination,
+        listing_id: u64,
+    ) -> Result<(), Error> {
+        let owner: FungibleAccountOwner = buyer;
+        let price = self.get_price(listing_id).await;
+        let call = fungible::ApplicationCall::Transfer {
+            owner: owner,
+            amount: price,
+            destination: destination,
+        };
+
+        self.call_application(true, Self::fungible_id()?, &call, vec![])
+            .await?;
+        Ok(())
     }
 
     async fn buy_nft(&mut self, listing_id: u64, new_owner: Account) -> Result<(), Error> {
