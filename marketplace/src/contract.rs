@@ -86,16 +86,8 @@ impl Contract for MarketPlace {
 impl MarketPlace {
 
     fn fungible_id() -> Result<ApplicationId<FungibleTokenAbi>, Error> {
-        let hello:Result<ApplicationId<FungibleTokenAbi>, Error>  = Self::parameters();
-        hello
+        Self::parameters()
     }
-
-    // fn nft_id() -> Result<ApplicationId<NFTabi>, Error> {
-    //     let hello: Result<(ApplicationId<NFTabi>, ApplicationId<FungibleTokenAbi>), Error> =
-    //         Self::parameters();
-    //     let result_nft_id: Result<ApplicationId<NFTabi>, Error> = hello.map(|(nft_id, _)| nft_id);
-    //     result_nft_id
-    // }
 
     async fn receive_from_account(
         &mut self,
@@ -108,7 +100,7 @@ impl MarketPlace {
             amount,
             destination,
         };
-        
+        info!("Calling other application");
         self.call_application(true, Self::fungible_id()?, &transfer, vec![])
             .await?;
         Ok(())
@@ -125,24 +117,24 @@ impl MarketPlace {
         Ok(())
     }
 
-    // async fn transfer_money(
-    //     &mut self,
-    //     buyer: FungibleAccountOwner,
-    //     destination: Destination,
-    //     listing_id: u64,
-    // ) -> Result<(), Error> {
-    //     let owner: FungibleAccountOwner = buyer;
-    //     let price = self.get_price(listing_id).await;
-    //     let call = fungible::ApplicationCall::Transfer {
-    //         owner: owner,
-    //         amount: price,
-    //         destination: destination,
-    //     };
+    async fn transfer_money(
+        &mut self,
+        buyer: FungibleAccountOwner,
+        account: Account,
+        price: Amount,
+    ) -> Result<(), Error> {
+        
+        let destination = Destination::Account(account);
+        let call = fungible::ApplicationCall::Transfer {
+            owner: buyer,
+            amount: price,
+            destination: destination,
+        };
 
-    //     self.call_application(true, Self::fungible_id()?, &call, vec![])
-    //         .await?;
-    //     Ok(())
-    // }
+        self.call_application(true, Self::fungible_id()?, &call, vec![])
+            .await?;
+        Ok(())
+    }
 
     // async fn buy_nft(&mut self, listing_id: u64, new_owner: Account) -> Result<(), Error> {
     //     let call = nft::ApplicationCall::Transfer {

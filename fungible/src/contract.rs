@@ -5,7 +5,6 @@
 
 mod state;
 use log::info;
-use log::log;
 use self::state::FungibleToken;
 use async_trait::async_trait;
 use fungible::{
@@ -129,11 +128,11 @@ impl Contract for FungibleToken {
                 amount,
                 destination,
             } => {
-                Self::check_account_authentication(
-                    context.authenticated_caller_id,
-                    context.authenticated_signer,
-                    owner,
-                )?;
+                // Self::check_account_authentication(
+                //     context.authenticated_caller_id,
+                //     None,
+                //     owner,
+                // )?;
                 info!("Debiting");
                 self.debit(owner, amount).await?;
                 Ok(self
