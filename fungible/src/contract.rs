@@ -36,8 +36,10 @@ impl Contract for FungibleToken {
         mut state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         // If initial accounts are empty, creator gets 1M tokens to act like a faucet.
+        log::info!("Initialisation arg called");
         if state.accounts.is_empty() {
             if let Some(owner) = context.authenticated_signer {
+                log::info!("State empty");
                 state.accounts.insert(
                     FungibleAccountOwner::User(owner),
                     Amount::from_str("1000000").unwrap(),

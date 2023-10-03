@@ -21,7 +21,10 @@ pub struct FungibleToken {
 impl FungibleToken {
     /// Initializes the application state with some accounts with initial balances.
     pub(crate) async fn initialize_accounts(&mut self, state: InitialState) {
+        log::info!("initialize_accounts called");
         for (k, v) in state.accounts {
+            log::info!("INTIALISING AGAIN");
+            log::info!("Amount: {}", v);
             self.accounts
                 .insert(&k, v)
                 .expect("Error in insert statement");
