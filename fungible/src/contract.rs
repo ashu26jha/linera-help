@@ -10,7 +10,7 @@ use fungible::{
     Account, ApplicationCall, Destination, FungibleAccountOwner, Message, Operation, SessionCall,
 };
 use linera_sdk::{
-    base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi, ChainId},
+    base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -83,9 +83,9 @@ impl Contract for FungibleToken {
 
             Operation::CreditSomeone {
                 target_account,
-                caller_chain
+                caller
             } => {
-                Ok(self.check_shit(target_account, caller_chain).await)
+                Ok(self.check_shit(target_account, caller).await)
             }
         }
     }
@@ -117,17 +117,17 @@ impl Contract for FungibleToken {
 
             Message::FetchBalance {
                 owner ,
-                caller_chain
+                caller
             } => {
                 
                 info!("Fetch balance");
 
                 let bal = self.balance(&owner).await;
-                let message = Message::Balance { amount: bal };
-                Ok(ExecutionResult::default().with_authenticated_message(caller_chain, message))
+                let message = Message::Balance { amount: bal, caller };
+                Ok(ExecutionResult::default().with_authenticated_message(caller.chain_id, message))
             }
 
-            Message::Balance { amount } => {
+            Message::Balance { amount , caller} => {
                 info!("Chain ID, {}", system_api::current_chain_id());
                 info!("Balance {}", amount);
                 Ok(ExecutionResult::default())
@@ -274,13 +274,14 @@ impl FungibleToken {
         }
         result
     }
-    async fn check_shit(&mut self, account: Account, caller_chain: ChainId) -> ExecutionResult<Message> {
+    async fn check_shit(&mut self, account: Account, caller: Account) -> ExecutionResult<Message> {
         info!("Pray");
+        
         let message = Message::FetchBalance {
             owner: account.owner,
-            caller_chain
-
+            caller
         };
+
         ExecutionResult::default().with_message(account.chain_id, message)
     }
     /// Executes the final step of a transfer where the tokens are sent to the destination.
