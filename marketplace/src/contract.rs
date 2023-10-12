@@ -10,7 +10,6 @@ use linera_sdk::{
 };
 use log::info;
 use marketplace::Operation;
-// use nft::{Account, AccountOwner, NFTabi};
 use thiserror::Error;
 
 linera_sdk::contract!(MarketPlace);
@@ -136,16 +135,6 @@ impl MarketPlace {
         Ok(())
     }
 
-    // async fn buy_nft(&mut self, listing_id: u64, new_owner: Account) -> Result<(), Error> {
-    //     let call = nft::ApplicationCall::Transfer {
-    //         token_id: listing_id,
-    //         new_owner: new_owner,
-    //     };
-    //     self.call_application(true, Self::nft_id()?, &call, vec![])
-    //         .await?;
-
-    //     Ok(())
-    // }
 }
 #[derive(Debug, Error)]
 pub enum Error {

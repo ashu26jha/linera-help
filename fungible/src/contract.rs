@@ -120,15 +120,16 @@ impl Contract for FungibleToken {
                 caller_chain
             } => {
                 
-                info!("Fetch balance: {}", system_api::current_chain_id());
+                info!("Fetch balance");
 
                 let bal = self.balance(&owner).await;
                 let message = Message::Balance { amount: bal };
-                Ok(ExecutionResult::default())
+                Ok(ExecutionResult::default().with_authenticated_message(caller_chain, message))
             }
 
             Message::Balance { amount } => {
-                info!("Interestingly called");
+                info!("Chain ID, {}", system_api::current_chain_id());
+                info!("Balance {}", amount);
                 Ok(ExecutionResult::default())
             }
         }
@@ -142,6 +143,7 @@ impl Contract for FungibleToken {
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         match call {
+
             ApplicationCall::Balance { owner } => {
                 let mut result = ApplicationCallResult::default();
                 let balance = self.balance(&owner).await;
@@ -199,24 +201,6 @@ impl Contract for FungibleToken {
 }
 
 impl FungibleToken {
-    async fn get_balance(&self, account: FungibleAccountOwner) -> Amount {
-        let bal = self.balance(&account).await;
-        info!("{}", bal);
-        bal
-    }
-
-    // async fn helper(
-    //     &self,
-    //     account_owner: FungibleAccountOwner,
-    //     caller: ChainId,
-    // ) -> ExecutionResult<Message> {
-    //     info!("Sending a cross chain message");
-    //     let message = Message::FetchBalance {
-    //         account_owner: account_owner,
-    //         caller: caller,
-    //     };
-    //     ExecutionResult::default().with_message(caller, message)
-    // }
 
     /// Verifies that a transfer is authenticated for this local account.
     fn check_account_authentication(
