@@ -10,7 +10,7 @@ use fungible::{
     Account, ApplicationCall, Destination, FungibleAccountOwner, Message, Operation, SessionCall,
 };
 use linera_sdk::{
-    base::{Amount, ApplicationId, ChainId, Owner, SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi, ChainId},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -81,12 +81,11 @@ impl Contract for FungibleToken {
                 self.claim(source_account, amount, target_account).await
             }
 
-            Operation::GetBalance {
+            Operation::CreditSomeone {
                 target_account,
-                chain_id,
+                caller_chain
             } => {
-                Self::helper(&self, target_account, chain_id).await;
-                Ok(ExecutionResult::default())
+                Ok(self.check_shit(target_account, caller_chain).await)
             }
         }
     }
@@ -117,15 +116,15 @@ impl Contract for FungibleToken {
             }
 
             Message::FetchBalance {
-                account_owner,
-                caller,
+                owner ,
+                caller_chain
             } => {
+                
+                info!("Fetch balance: {}", system_api::current_chain_id());
 
-                info!("Message Recieved");
-                let balance = Self::get_balance(&self, account_owner).await;
-                info!("Balance is : {}", balance);
-                Ok(ExecutionResult::default()
-                    .with_message(caller, Message::Balance { amount: balance }))
+                let bal = self.balance(&owner).await;
+                let message = Message::Balance { amount: bal };
+                Ok(ExecutionResult::default())
             }
 
             Message::Balance { amount } => {
@@ -206,15 +205,18 @@ impl FungibleToken {
         bal
     }
 
-    async fn helper(
-        &self,
-        account_owner: FungibleAccountOwner,
-        caller: ChainId,
-    ) -> ExecutionResult<Message> {
-        info!("Sending a cross chain message");
-            let message = Message::FetchBalance { account_owner: account_owner, caller: caller };
-            ExecutionResult::default().with_message(caller, message)
-    }
+    // async fn helper(
+    //     &self,
+    //     account_owner: FungibleAccountOwner,
+    //     caller: ChainId,
+    // ) -> ExecutionResult<Message> {
+    //     info!("Sending a cross chain message");
+    //     let message = Message::FetchBalance {
+    //         account_owner: account_owner,
+    //         caller: caller,
+    //     };
+    //     ExecutionResult::default().with_message(caller, message)
+    // }
 
     /// Verifies that a transfer is authenticated for this local account.
     fn check_account_authentication(
@@ -288,7 +290,15 @@ impl FungibleToken {
         }
         result
     }
+    async fn check_shit(&mut self, account: Account, caller_chain: ChainId) -> ExecutionResult<Message> {
+        info!("Pray");
+        let message = Message::FetchBalance {
+            owner: account.owner,
+            caller_chain
 
+        };
+        ExecutionResult::default().with_message(account.chain_id, message)
+    }
     /// Executes the final step of a transfer where the tokens are sent to the destination.
     async fn finish_transfer_to_account(
         &mut self,

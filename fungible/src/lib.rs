@@ -52,9 +52,9 @@ pub enum Operation {
         target_account: Account,
     },
 
-    GetBalance {
-        target_account: FungibleAccountOwner,
-        chain_id: ChainId,
+    CreditSomeone {
+        target_account: Account,
+        caller_chain: ChainId
     },
 }
 
@@ -75,8 +75,8 @@ pub enum Message {
     },
 
     FetchBalance {
-        account_owner: FungibleAccountOwner,
-        caller: ChainId,
+        owner: FungibleAccountOwner,
+        caller_chain: ChainId
     },
 
     Balance {
