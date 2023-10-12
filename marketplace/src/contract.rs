@@ -98,9 +98,9 @@ impl Contract for MarketPlace {
                 owner,
                 price,
             } => {
-                info!("Chain ID {}", system_api::current_chain_id());
-                info!("Owner: {}", owner.chain_id);
-                info!("Price: {}", price);
+                let destination = Destination::Account(owner);
+                self.transfer_funds(caller.owner,price,destination).await;
+                // Calling a function to transfer funds
                 Ok(ExecutionResult::default())
             }
         }
@@ -129,6 +129,28 @@ impl Contract for MarketPlace {
 }
 
 impl MarketPlace {
+    fn fungible_id() -> Result<ApplicationId<FungibleTokenAbi>, Error> {
+        Self::parameters()
+    }
+
+    async fn transfer_funds(
+        &mut self,
+        owner: FungibleAccountOwner,
+        amount: Amount,
+        destination: Destination,
+    ) -> Result<(), Error> {
+
+        let transfer = fungible::ApplicationCall::Transfer {
+            owner: owner,
+            amount: amount,
+            destination: destination,
+        };
+
+        self.call_application(true, Self::fungible_id()?, &transfer, vec![])
+            .await?;
+
+        Ok(())
+    }
     async fn price_helper(
         &mut self,
         listing_id: u64,
@@ -138,10 +160,6 @@ impl MarketPlace {
         info!("Sending message");
         let message = Message::FetchBalance { listing_id, caller };
         ExecutionResult::default().with_message(chain_id, message)
-    }
-
-    fn fungible_id() -> Result<ApplicationId<FungibleTokenAbi>, Error> {
-        Self::parameters()
     }
 
     async fn receive_from_account(

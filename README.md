@@ -1,5 +1,5 @@
 linera project publish-and-create --json-argument '{ "accounts": {
-        "User:576ddd473581a98b3437a4bd0735975c6746c6f34fa030c487f27031941cfbd6": "10000."
+        "User:993b65733a2e14119dda9191e7a9ab3e56d4ee26974132ce4454b03635154cb8": "10000."
     } }'
 
 
