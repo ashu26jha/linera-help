@@ -29,6 +29,8 @@ pub enum Operation {
     List {
         token_id: u64,
         price: Amount,
+        owner: FungibleAccountOwner,
+        chain_id: ChainId,
     },
 
     Buy {
@@ -46,5 +48,14 @@ pub enum Operation {
 #[derive(Debug, Deserialize, Serialize)]
 
 pub enum Message {
-    FetchBalance { listing_id: u64, caller: Account },
+    FetchBalance {
+        listing_id: u64,
+        caller: Account,
+    },
+    Price {
+        caller: Account,
+        listing_id: u64,
+        owner: Account,
+        price: Amount,
+    },
 }

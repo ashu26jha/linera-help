@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use fungible::{Account, Destination, FungibleAccountOwner, FungibleTokenAbi};
 use linera_sdk::{
     base::{Amount, ApplicationId, ChainId, SessionId, WithContractAbi},
+    contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -47,8 +48,13 @@ impl Contract for MarketPlace {
                     .await?;
                 Ok(ExecutionResult::default())
             }
-            Operation::List { token_id, price } => {
-                self.add_listings(price, token_id).await;
+            Operation::List {
+                token_id,
+                price,
+                owner,
+                chain_id,
+            } => {
+                self.add_listings(price, token_id, owner, chain_id).await;
                 Ok(ExecutionResult::default())
             }
             Operation::FetchBalance {
@@ -70,8 +76,31 @@ impl Contract for MarketPlace {
         info!("Message Recieved BC");
         match message {
             Message::FetchBalance { listing_id, caller } => {
-                let bal = self.get_price(listing_id).await;
-                info!("Price: {}", bal);
+                let price = self.get_price(listing_id).await;
+                let chain_id = self.get_chain_id(listing_id).await;
+                let account_owner = self.get_owner(listing_id).await;
+                let owner = Account {
+                    chain_id: chain_id,
+                    owner: account_owner,
+                };
+                let message = Message::Price {
+                    caller,
+                    listing_id,
+                    owner,
+                    price,
+                };
+                Ok(ExecutionResult::default().with_authenticated_message(caller.chain_id, message))
+            }
+
+            Message::Price {
+                caller,
+                listing_id,
+                owner,
+                price,
+            } => {
+                info!("Chain ID {}", system_api::current_chain_id());
+                info!("Owner: {}", owner.chain_id);
+                info!("Price: {}", price);
                 Ok(ExecutionResult::default())
             }
         }
