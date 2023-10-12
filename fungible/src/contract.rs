@@ -4,18 +4,18 @@
 #![cfg_attr(target_arch = "wasm32", no_main)]
 
 mod state;
-use log::info;
 use self::state::FungibleToken;
 use async_trait::async_trait;
 use fungible::{
     Account, ApplicationCall, Destination, FungibleAccountOwner, Message, Operation, SessionCall,
 };
 use linera_sdk::{
-    base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, ChainId, Owner, SessionId, WithContractAbi},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use log::info;
 use std::str::FromStr;
 use thiserror::Error;
 
@@ -80,6 +80,14 @@ impl Contract for FungibleToken {
                 )?;
                 self.claim(source_account, amount, target_account).await
             }
+
+            Operation::GetBalance {
+                target_account,
+                chain_id,
+            } => {
+                Self::helper(&self, target_account, chain_id).await;
+                Ok(ExecutionResult::default())
+            }
         }
     }
 
@@ -106,6 +114,23 @@ impl Contract for FungibleToken {
                 Ok(self
                     .finish_transfer_to_account(amount, target_account)
                     .await)
+            }
+
+            Message::FetchBalance {
+                account_owner,
+                caller,
+            } => {
+
+                info!("Message Recieved");
+                let balance = Self::get_balance(&self, account_owner).await;
+                info!("Balance is : {}", balance);
+                Ok(ExecutionResult::default()
+                    .with_message(caller, Message::Balance { amount: balance }))
+            }
+
+            Message::Balance { amount } => {
+                info!("Interestingly called");
+                Ok(ExecutionResult::default())
             }
         }
     }
@@ -175,6 +200,22 @@ impl Contract for FungibleToken {
 }
 
 impl FungibleToken {
+    async fn get_balance(&self, account: FungibleAccountOwner) -> Amount {
+        let bal = self.balance(&account).await;
+        info!("{}", bal);
+        bal
+    }
+
+    async fn helper(
+        &self,
+        account_owner: FungibleAccountOwner,
+        caller: ChainId,
+    ) -> ExecutionResult<Message> {
+        info!("Sending a cross chain message");
+            let message = Message::FetchBalance { account_owner: account_owner, caller: caller };
+            ExecutionResult::default().with_message(caller, message)
+    }
+
     /// Verifies that a transfer is authenticated for this local account.
     fn check_account_authentication(
         authenticated_application_id: Option<ApplicationId>,

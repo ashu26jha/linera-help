@@ -51,6 +51,11 @@ pub enum Operation {
         amount: Amount,
         target_account: Account,
     },
+
+    GetBalance {
+        target_account: FungibleAccountOwner,
+        chain_id: ChainId,
+    },
 }
 
 /// A message.
@@ -67,6 +72,15 @@ pub enum Message {
         owner: FungibleAccountOwner,
         amount: Amount,
         target_account: Account,
+    },
+
+    FetchBalance {
+        account_owner: FungibleAccountOwner,
+        caller: ChainId,
+    },
+
+    Balance {
+        amount: Amount,
     },
 }
 

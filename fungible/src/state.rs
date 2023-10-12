@@ -45,9 +45,9 @@ impl FungibleToken {
     pub(crate) async fn credit(&mut self, account: &FungibleAccountOwner, amount: Amount) {
         let mut balance = self.balance(&account).await;
         info!("Account, {:?}", account);
-        info!("Balance before {}",balance);
+        info!("Balance before {}", balance);
         balance.saturating_add_assign(amount);
-        info!("Balance after {}",balance);
+        info!("Balance after {}", balance);
         self.accounts
             .insert(&account, balance)
             .expect("Failed insert statement");
