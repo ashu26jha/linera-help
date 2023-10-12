@@ -98,9 +98,10 @@ impl Contract for FungibleToken {
         info!("Message Recieved BC");
         match message {
             Message::Credit { owner, amount } => {
-                info!("Crediting");
+                info!("Chain ID, {}", system_api::current_chain_id());
                 self.credit(&owner, amount).await;
                 info!("Credited");
+                
                 Ok(ExecutionResult::default())
             }
             Message::Withdraw {
@@ -128,9 +129,8 @@ impl Contract for FungibleToken {
             }
 
             Message::Balance { amount , caller} => {
-                info!("Chain ID, {}", system_api::current_chain_id());
-                info!("Balance {}", amount);
-                Ok(ExecutionResult::default())
+                let credit = Message::Credit { owner: caller.owner, amount: amount };
+                Ok(ExecutionResult::default().with_authenticated_message(caller.chain_id, credit))
             }
         }
     }

@@ -1,7 +1,7 @@
 use async_graphql::{Request, Response};
-use fungible::{FungibleAccountOwner, Account};
+use fungible::{Account, FungibleAccountOwner};
 use linera_sdk::{
-    base::{Amount, ApplicationId, ContractAbi, ServiceAbi},
+    base::{Amount, ApplicationId, ChainId, ContractAbi, ServiceAbi},
     graphql::GraphQLMutationRoot,
 };
 pub struct MarketPlaceABI;
@@ -11,7 +11,7 @@ impl ContractAbi for MarketPlaceABI {
     type Parameters = ApplicationId<fungible::FungibleTokenAbi>;
     type InitializationArgument = ();
     type Operation = Operation;
-    type Message = ();
+    type Message = Message;
     type ApplicationCall = ();
     type SessionCall = ();
     type SessionState = ();
@@ -36,4 +36,15 @@ pub enum Operation {
         amount: Amount,
         destination: Account,
     },
+
+    FetchBalance {
+        listing_id: u64,
+        caller: Account,
+        chain_id: ChainId,
+    },
+}
+#[derive(Debug, Deserialize, Serialize)]
+
+pub enum Message {
+    FetchBalance { listing_id: u64, caller: Account },
 }

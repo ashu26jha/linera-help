@@ -2,14 +2,14 @@
 mod state;
 use self::state::MarketPlace;
 use async_trait::async_trait;
-use fungible::{Destination, FungibleAccountOwner, FungibleTokenAbi, Account};
+use fungible::{Account, Destination, FungibleAccountOwner, FungibleTokenAbi};
 use linera_sdk::{
-    base::{ApplicationId, SessionId, WithContractAbi, Amount},
+    base::{Amount, ApplicationId, ChainId, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
-    OperationContext, SessionCallResult, ViewStateStorage
+    OperationContext, SessionCallResult, ViewStateStorage,
 };
 use log::info;
-use marketplace::Operation;
+use marketplace::{Message, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(MarketPlace);
@@ -37,27 +37,44 @@ impl Contract for MarketPlace {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::Buy { 
+            Operation::Buy {
                 owner,
-                amount ,
-                destination
+                amount,
+                destination,
             } => {
                 let destination = Destination::Account(destination);
-                self.execute_pledge_with_account(owner, amount, destination).await?;
+                self.execute_pledge_with_account(owner, amount, destination)
+                    .await?;
+                Ok(ExecutionResult::default())
             }
             Operation::List { token_id, price } => {
                 self.add_listings(price, token_id).await;
+                Ok(ExecutionResult::default())
+            }
+            Operation::FetchBalance {
+                listing_id,
+                caller,
+                chain_id,
+            } => {
+                info!("Fetching price");
+                Ok(self.price_helper(listing_id, chain_id, caller).await)
             }
         }
-        Ok(ExecutionResult::default())
     }
 
     async fn execute_message(
         &mut self,
         _context: &MessageContext,
-        _message: Self::Message,
+        message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        Ok(ExecutionResult::default())
+        info!("Message Recieved BC");
+        match message {
+            Message::FetchBalance { listing_id, caller } => {
+                let bal = self.get_price(listing_id).await;
+                info!("Price: {}", bal);
+                Ok(ExecutionResult::default())
+            }
+        }
     }
 
     async fn handle_application_call(
@@ -78,11 +95,21 @@ impl Contract for MarketPlace {
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<SessionCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        Ok(SessionCallResult::default())
+        Err(Error::SessionError)
     }
 }
 
 impl MarketPlace {
+    async fn price_helper(
+        &mut self,
+        listing_id: u64,
+        chain_id: ChainId,
+        caller: Account,
+    ) -> ExecutionResult<Message> {
+        info!("Sending message");
+        let message = Message::FetchBalance { listing_id, caller };
+        ExecutionResult::default().with_message(chain_id, message)
+    }
 
     fn fungible_id() -> Result<ApplicationId<FungibleTokenAbi>, Error> {
         Self::parameters()
@@ -92,8 +119,8 @@ impl MarketPlace {
         &mut self,
         owner: FungibleAccountOwner,
         amount: Amount,
-        destination: Destination
-    ) -> Result<(), Error> {    
+        destination: Destination,
+    ) -> Result<(), Error> {
         let transfer = fungible::ApplicationCall::Transfer {
             owner,
             amount,
@@ -110,9 +137,9 @@ impl MarketPlace {
         owner: FungibleAccountOwner,
         amount: Amount,
         destination: Destination,
-    )->Result<(), Error>  {
-
-        self.receive_from_account(owner, amount, destination).await?;
+    ) -> Result<(), Error> {
+        self.receive_from_account(owner, amount, destination)
+            .await?;
         Ok(())
     }
 
@@ -122,7 +149,6 @@ impl MarketPlace {
         account: Account,
         price: Amount,
     ) -> Result<(), Error> {
-        
         let destination = Destination::Account(account);
         let call = fungible::ApplicationCall::Transfer {
             owner: buyer,
@@ -134,7 +160,6 @@ impl MarketPlace {
             .await?;
         Ok(())
     }
-
 }
 #[derive(Debug, Error)]
 pub enum Error {
@@ -148,4 +173,7 @@ pub enum Error {
     // Add more error variants here.
     #[error("Already sold")]
     NFTsoldError,
+
+    #[error("Session call not supported")]
+    SessionError,
 }
