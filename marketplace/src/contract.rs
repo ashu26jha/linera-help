@@ -4,7 +4,7 @@ use self::state::MarketPlace;
 use async_trait::async_trait;
 use fungible::{Account, Destination, FungibleAccountOwner};
 use linera_sdk::{
-    base::{Amount, ApplicationId, ChainId, SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, ChainId, Owner, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -60,10 +60,7 @@ impl Contract for MarketPlace {
                 listing_id,
                 caller,
                 chain_id,
-            } => {
-                info!("Fetching price");
-                Ok(self.price_helper(listing_id, chain_id, caller).await)
-            }
+            } => Ok(self.price_helper(listing_id, chain_id, caller).await),
         }
     }
 
@@ -98,8 +95,20 @@ impl Contract for MarketPlace {
                 price,
             } => {
                 let destination = Destination::Account(owner);
-                self.transfer_funds(caller.owner,price,destination).await;
-                // Calling a function to transfer funds
+
+                let _ = self.transfer_funds(caller.owner, price, destination).await;
+                let token_id: u64 = listing_id;
+
+                let owner = self.extract_owner(caller.owner);
+                let acc = nft::AccountOwner::User(owner);
+
+                let new_owner = nft::Account {
+                    chain_id: caller.chain_id,
+                    owner: acc,
+                };
+
+                let _ = self.transfer_nft(new_owner, token_id).await;
+
                 Ok(ExecutionResult::default())
             }
         }
@@ -128,6 +137,13 @@ impl Contract for MarketPlace {
 }
 
 impl MarketPlace {
+    fn extract_owner(&mut self, owner_enum: FungibleAccountOwner) -> Owner {
+        match owner_enum {
+            FungibleAccountOwner::User(owner) => owner,
+            _ => panic!("Trying to transfer NFT to contract which is not allowed"),
+        }
+    }
+
     fn fungible_id() -> Result<ApplicationId<fungible::FungibleTokenAbi>, Error> {
         Ok(Self::parameters()?.fungible_app_id)
     }
@@ -136,13 +152,23 @@ impl MarketPlace {
         Ok(Self::parameters()?.nft_app_id)
     }
 
+    async fn transfer_nft(&mut self, new_owner: nft::Account, token_id: u64) -> Result<(), Error> {
+        info!("Transfering NFT");
+        let transfer = nft::ApplicationCall::Transfer {
+            token_id,
+            new_owner,
+        };
+        self.call_application(true, Self::nft_id()?, &transfer, vec![])
+            .await?;
+        Ok(())
+    }
+
     async fn transfer_funds(
         &mut self,
         owner: FungibleAccountOwner,
         amount: Amount,
         destination: Destination,
     ) -> Result<(), Error> {
-
         let transfer = fungible::ApplicationCall::Transfer {
             owner: owner,
             amount: amount,

@@ -10,6 +10,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use log::info;
 use nft::{Account, AccountOwner, ApplicationCall, Message, Operation};
 use thiserror::Error;
 
@@ -130,13 +131,8 @@ impl Contract for NFTtoken {
                 token_id,
                 new_owner,
             } => {
-                Self::check_account_authentication(
-                    &mut self,
-                    context.authenticated_caller_id,
-                    context.authenticated_signer,
-                    token_id,
-                )
-                .await?;
+                log::info!("Application call recieved");
+                info!("Chain ID {}", system_api::current_chain_id());
                 self.transfer_nft_account( new_owner, token_id,).await;
                 Ok(ApplicationCallResult::default())
             }

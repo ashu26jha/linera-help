@@ -82,4 +82,12 @@ impl MarketPlace {
             .expect("Couldn't get chain ID")
             .unwrap()
     }
+
+    pub async fn get_token_id(&self, listing_id: u64) -> u64 {
+        self.listings_token_id
+            .get(&listing_id)
+            .await
+            .expect("Couldn't get token ID")
+            .unwrap()
+    }
 }

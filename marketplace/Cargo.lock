@@ -1725,6 +1725,7 @@ dependencies = [
  "futures",
  "linera-sdk",
  "linera-views",
+ "log",
  "serde",
  "serde_json",
  "thiserror",
