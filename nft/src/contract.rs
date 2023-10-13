@@ -6,10 +6,12 @@ use self::state::NFTtoken;
 use async_trait::async_trait;
 use linera_sdk::{
     base::{ApplicationId, Owner, SessionId, WithContractAbi},
+    contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use nft::{AccountOwner, ApplicationCall, Message, Operation};
+use log::info;
+use nft::{Account, AccountOwner, ApplicationCall, Message, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(NFTtoken);
@@ -87,7 +89,8 @@ impl Contract for NFTtoken {
                     token_id,
                 )
                 .await?;
-                self.transfer_nft(token_id, new_owner).await;
+
+                self.transfer_nft_account(new_owner, token_id).await;
                 Ok(ExecutionResult::default())
             }
         }
@@ -106,6 +109,13 @@ impl Contract for NFTtoken {
                 self.handle_message(token_id, target_account.owner).await;
                 Ok(ExecutionResult::default())
             }
+            Message::Recieve {
+                token_id,
+                target_account,
+            } => {
+                self.transfer_nft(token_id, target_account).await;
+                Ok(ExecutionResult::default())
+            }
         }
     }
 
@@ -121,14 +131,9 @@ impl Contract for NFTtoken {
                 token_id,
                 new_owner,
             } => {
-                Self::check_account_authentication(
-                    &mut self,
-                    context.authenticated_caller_id,
-                    context.authenticated_signer,
-                    token_id,
-                )
-                .await?;
-                self.transfer_nft(token_id, new_owner).await;
+                log::info!("Application call recieved");
+                info!("Chain ID {}", system_api::current_chain_id());
+                self.transfer_nft_account( new_owner, token_id,).await;
                 Ok(ApplicationCallResult::default())
             }
         }
@@ -147,6 +152,29 @@ impl Contract for NFTtoken {
 }
 
 impl NFTtoken {
+    async fn transfer_nft_account(
+        &mut self,
+        reciever: Account,
+        token_id: u64,
+    ) -> ExecutionResult<Message> {
+
+        if reciever.chain_id == system_api::current_chain_id() {
+            self.transfer_nft(token_id, reciever.owner).await;
+            return ExecutionResult::default();
+        }
+
+        let cross_chain_message = Message::Recieve {
+            token_id: token_id,
+            target_account: reciever.owner,
+        };
+
+        // Making change in its own chain
+        self.transfer_nft(token_id, reciever.owner).await;
+        // Sending the message : Hey change in yours 
+        ExecutionResult::default()
+            .with_authenticated_message(reciever.chain_id, cross_chain_message)
+    }
+
     async fn check_account_authentication(
         &mut self,
         authenticated_application_id: Option<ApplicationId>,
