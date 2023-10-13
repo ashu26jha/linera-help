@@ -8,7 +8,7 @@ pub struct MarketPlaceABI;
 use serde::{Deserialize, Serialize};
 
 impl ContractAbi for MarketPlaceABI {
-    type Parameters = ApplicationId<fungible::FungibleTokenAbi>;
+    type Parameters = MarketPlaceParameters;
     type InitializationArgument = ();
     type Operation = Operation;
     type Message = Message;
@@ -19,9 +19,15 @@ impl ContractAbi for MarketPlaceABI {
 }
 
 impl ServiceAbi for MarketPlaceABI {
-    type Parameters = ApplicationId<fungible::FungibleTokenAbi>;
+    type Parameters = MarketPlaceParameters;
     type Query = Request;
     type QueryResponse = Response;
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MarketPlaceParameters {
+    pub fungible_app_id: ApplicationId<fungible::FungibleTokenAbi>,
+    pub nft_app_id: ApplicationId<nft::NFTabi>,
 }
 
 #[derive(Debug, Deserialize, Serialize, GraphQLMutationRoot)]

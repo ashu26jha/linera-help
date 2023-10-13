@@ -2,10 +2,9 @@
 mod state;
 use self::state::MarketPlace;
 use async_trait::async_trait;
-use fungible::{Account, Destination, FungibleAccountOwner, FungibleTokenAbi};
+use fungible::{Account, Destination, FungibleAccountOwner};
 use linera_sdk::{
     base::{Amount, ApplicationId, ChainId, SessionId, WithContractAbi},
-    contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -129,8 +128,12 @@ impl Contract for MarketPlace {
 }
 
 impl MarketPlace {
-    fn fungible_id() -> Result<ApplicationId<FungibleTokenAbi>, Error> {
-        Self::parameters()
+    fn fungible_id() -> Result<ApplicationId<fungible::FungibleTokenAbi>, Error> {
+        Ok(Self::parameters()?.fungible_app_id)
+    }
+
+    fn nft_id() -> Result<ApplicationId<nft::NFTabi>, Error> {
+        Ok(Self::parameters()?.nft_app_id)
     }
 
     async fn transfer_funds(
@@ -151,6 +154,7 @@ impl MarketPlace {
 
         Ok(())
     }
+
     async fn price_helper(
         &mut self,
         listing_id: u64,
@@ -190,23 +194,25 @@ impl MarketPlace {
         Ok(())
     }
 
-    async fn transfer_money(
-        &mut self,
-        buyer: FungibleAccountOwner,
-        account: Account,
-        price: Amount,
-    ) -> Result<(), Error> {
-        let destination = Destination::Account(account);
-        let call = fungible::ApplicationCall::Transfer {
-            owner: buyer,
-            amount: price,
-            destination: destination,
-        };
+    // DELETE THIS AFTER THE CHECK
 
-        self.call_application(true, Self::fungible_id()?, &call, vec![])
-            .await?;
-        Ok(())
-    }
+    // async fn transfer_money(
+    //     &mut self,
+    //     buyer: FungibleAccountOwner,
+    //     account: Account,
+    //     price: Amount,
+    // ) -> Result<(), Error> {
+    //     let destination = Destination::Account(account);
+    //     let call = fungible::ApplicationCall::Transfer {
+    //         owner: buyer,
+    //         amount: price,
+    //         destination: destination,
+    //     };
+
+    //     self.call_application(true, Self::fungible_id()?, &call, vec![])
+    //         .await?;
+    //     Ok(())
+    // }
 }
 #[derive(Debug, Error)]
 pub enum Error {
