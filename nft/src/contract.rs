@@ -42,17 +42,8 @@ impl Contract for NFTtoken {
                 token_id,
                 approved_for,
             } => {
-                Self::check_account_authentication(
-                    &mut self,
-                    None,
-                    context.authenticated_signer,
-                    token_id,
-                )
-                .await?;
-
                 self.approve_nft(token_id, approved_for).await;
                 // Approves the NFT
-
                 Ok(ExecutionResult::default())
             }
             Operation::Burn { token_id } => {
@@ -121,7 +112,7 @@ impl Contract for NFTtoken {
 
     async fn handle_application_call(
         &mut self,
-        context: &CalleeContext,
+        _context: &CalleeContext,
         call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>

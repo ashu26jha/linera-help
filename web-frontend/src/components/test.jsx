@@ -19,26 +19,25 @@ function Test({ chainId, owner }) {
   const [tokenId, setTokenID] = useState(3);
   const [error, setError] = useState('');
 
+  const [approveId, setApproveId] = useState('');
+
   const JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI0MjQyZTQzYi0zODNiLTRhYjUtYWE1NC04YTc1MzIzYTY4NDQiLCJlbWFpbCI6ImFzaHV0b3NoMjZqaGFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siaWQiOiJGUkExIiwiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjF9LHsiaWQiOiJOWUMxIiwiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjF9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6ImI2NzI4ZDNmNWRjNjhjMzRhNWY4Iiwic2NvcGVkS2V5U2VjcmV0IjoiZGM3OTJkYjZhNzVkOTI5Y2MyNDllOGZkZDE2MGFhZDI3OGQwMmI1MmJmY2Y2OTQ1NTM4NDM4MjJkMjBiOTQwOSIsImlhdCI6MTY5MjgwNzQ2M30.c4mAp57G4DXIOvuMnYCtheJl6oO2MXMqJse49KSrXYo';
   const API_TOKEN = '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'
 
   const handleInputChange = (event) => {
-    console.log(event.target.value);
     setInputtext(event.target.value);
   }
 
   const MINT_NFT = gql`
-  mutation Mint{
-    mint(
-        owner:"User:${owner}",
-        tokenId:${tokenId},
-        tokenUri:"${tokenUri}"
-    )
-  }
-`
-  useEffect(() => {
-    console.log(tokenUri)
-  }, [tokenUri])
+    mutation Mint{
+      mint(
+          owner:"User:${owner}",
+          tokenId:${tokenId},
+          tokenUri:"${tokenUri}"
+      )
+    }
+  `;
+
   const [mintNFT, { loading: paymentLoading }] = useMutation(MINT_NFT, {
     onCompleted: () => {
     },
@@ -50,6 +49,29 @@ function Test({ chainId, owner }) {
     mintNFT({
 
     }).then(r => console.log('Minted'));
+  }
+
+  const APPROVE_NFT = gql
+  `
+  mutation Approve{
+    approve(
+      tokenId: 3,
+      approvedFor: "Application:e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65000000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65020000000000000000000000"
+    )
+  }
+  `;
+
+  const [approveNFT, {loading, approvingNFT}] = useMutation(APPROVE_NFT,{
+    onCompleted: () => {
+    },
+    onError: (error) => setError("Error: " + error.networkError.result),
+  })
+
+  const handleApprove = (event) => {
+    event.preventDefault();
+    approveNFT({
+
+    }).then(r => console.log('Approved'));
   }
 
   async function hello() {
@@ -109,6 +131,12 @@ function Test({ chainId, owner }) {
       </button>
       <button onClick={handleSubmit}>
         Mint
+      </button>
+
+      <br/>
+      <input placeholder="Application ID" onChange={((e)=>{setApproveId(e.target.value)})}/>
+      <button onClick={handleApprove}> 
+        Approve
       </button>
 
     </div>
