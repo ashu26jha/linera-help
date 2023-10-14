@@ -6,6 +6,7 @@ import {
   useSubscription,
 } from "@apollo/client";
 import axios from 'axios';
+import Navbar from "./navbar";
 
 function Mint({ chainId, owner }) {
   console.log("SSS")
@@ -124,6 +125,7 @@ function Mint({ chainId, owner }) {
   // Render
   return (
     <div>
+      <Navbar/>
       <input onChange={handleInputChange} placeholder="AI PROMPT" />
       <button onClick={hello}>
         Generate

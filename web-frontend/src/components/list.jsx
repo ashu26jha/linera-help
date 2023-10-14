@@ -1,10 +1,9 @@
 import {
     gql,
     useMutation,
-    useLazyQuery,
-    useSubscription,
 } from "@apollo/client";
 import { useState } from "react"
+import Navbar from "./navbar";
 
 function List({ chainId, owner }) {
     const [tokenId, setTokenID] = useState(0);
@@ -38,7 +37,7 @@ function List({ chainId, owner }) {
 
     return (
         <div>
-            Bhe
+            <Navbar/>
             <input onChange={((e) => { setPrice(e.target.value) })} />
             <button onClick={handleListNFT}>
                 List NFT

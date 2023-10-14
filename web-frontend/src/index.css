@@ -15,3 +15,51 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+body {
+  background: rgb(2, 0, 36);
+  background: linear-gradient(90deg, rgb(1, 0, 14) 0%, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 1) 55%, rgb(28, 0, 0) 90%, rgba(19, 0, 0, 1) 100%);
+  color: white
+}
+.logo{
+  width: 200px;
+  height: 70px;
+}
+
+.nav-wrapper{
+  display: flex;
+}
+.nav-items{
+  margin-left: auto;
+
+  display: flex;
+  margin-top: 18px;
+}
+.nav-item{
+  font-size: xx-large;
+  font-weight: 600;
+  margin-right: 40px;
+  color: rgb(221, 221, 221);
+  transition-duration: 0.3s; /* Adjust this value to control the transition speed */
+  transition-property: color;
+}
+.nav-item:hover{
+  color: white;
+  transition-duration: 2ms;
+}
+.banner{
+  width: 600px;
+  height: 250px;
+  background-color:rgb(17, 17, 17);
+  margin: auto;
+  margin-top: 100px;
+  border-radius: 20px;
+  text-align: center;
+}
+.banner-text {
+  font-size: 50px;
+  background: -webkit-linear-gradient(#eee, #333);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+}

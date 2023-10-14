@@ -11,6 +11,7 @@ import {
 import GraphQLProvider from "./GraphQLProvider";
 import Mint from "./components/mint";
 import List from "./components/list";
+import Home from "./components/home";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -26,6 +27,8 @@ root.render(
 
 function GraphQLApp() {
   const { id } = useParams();
+  console.log(id)
+
   let chain_id = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65"
   const [searchParams] = useSearchParams();
   let app = searchParams.get("app");
@@ -40,13 +43,30 @@ function GraphQLApp() {
   if (port == null) {
     port = 8080;
   }
-  return (
-    <GraphQLProvider chainId={chain_id} applicationId={app} port={port}>
-      <Routes>
-         <Route path="/" element={<List chainId={chain_id} owner={owner} />}>  </Route>
-
-      </Routes>
-
-    </GraphQLProvider>
-  );
+  if (id === 'mint') {
+    return (
+      <GraphQLProvider chainId={chain_id} applicationId={app} port={port}>
+        <Routes>
+          <Route path="/" element={<Mint chainId={chain_id} owner={owner} />} />
+        </Routes>
+      </GraphQLProvider>
+    );
+  } else if (id === 'list') {
+    return (
+      <GraphQLProvider chainId={chain_id} applicationId={app} port={port}>
+        <Routes>
+          <Route path="/" element={<List chainId={chain_id} owner={owner} />} />
+        </Routes>
+      </GraphQLProvider>
+    );
+  } else if(id==="home"){
+    return (
+        <Routes>
+          <Route path="/" element={<Home/>} />
+        </Routes>
+    );
+  } 
+  else {
+    return <div>Unknown id: {id}</div>;
+  }
 }
