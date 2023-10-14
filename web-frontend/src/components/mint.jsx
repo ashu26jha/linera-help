@@ -10,7 +10,7 @@ import Navbar from "./navbar";
 
 function Mint({ chainId, owner }) {
   console.log("SSS")
-  
+
   const [inputtext, setInputtext] = useState("")
   const [imageurl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +52,7 @@ function Mint({ chainId, owner }) {
     }).then(r => console.log('Minted'));
   }
   const APPROVE_NFT = gql
-  `
+    `
   mutation Approve{
     approve(
       tokenId: 3,
@@ -61,7 +61,7 @@ function Mint({ chainId, owner }) {
   }
   `;
 
-  const [approveNFT, {loading, approvingNFT}] = useMutation(APPROVE_NFT,{
+  const [approveNFT, { loading, approvingNFT }] = useMutation(APPROVE_NFT, {
     onCompleted: () => {
     },
     onError: (error) => setError("Error: " + error.networkError.result),
@@ -120,23 +120,35 @@ function Mint({ chainId, owner }) {
     setTokenUri(`ipfs://${res.data.IpfsHash}`)
     setHash(res.data.IpfsHash);
     setImageUrl(helloIMG);
+    setIsLoading(false);
+
   }
 
   // Render
   return (
     <div>
-      <Navbar/>
-      <input onChange={handleInputChange} placeholder="AI PROMPT" />
-      <button onClick={hello}>
-        Generate
-      </button>
-      <button onClick={handleSubmit}>
-        Mint
-      </button>
+      <Navbar />
+      <div className="mint-wrapper">
+        <input onChange={handleInputChange} placeholder="AI prompt" autoComplete="off" />
+        <br />
+        <button onClick={hello}>
+          Generate
+        </button>
+        
 
-      <br/>
-      <input placeholder="Application ID" onChange={((e)=>{setApproveId(e.target.value)})}/>
-      <button onClick={handleApprove}> 
+        {isLoading && (<img width={100} height={100} src="spinner.gif" className="spinner"/>)}
+
+  
+        <img src={imageurl} className="image-display" />
+        {imageurl !== "" && (
+          <button onClick={handleSubmit}>
+            Mint
+          </button>
+        )}
+      </div>
+
+      <input placeholder="Application ID" onChange={((e) => { setApproveId(e.target.value) })} />
+      <button onClick={handleApprove}>
         Approve
       </button>
 
