@@ -1,6 +1,16 @@
 "use client";
 import { useState } from "react";
+import {useQuery, gql} from '@apollo/client';
+
 import axios from 'axios';
+
+const QUERY = gql`
+query{
+  chain(chainId:"dad01517c7a3c428ea903253a9e59964e8db06d323a9bd3f4c74d6366832bdbf"){
+    confirmedLog
+  }
+}
+`
 
 export default function Home() {
   const [inputtext, setInputtext] = useState("")
@@ -38,7 +48,7 @@ export default function Home() {
     const blobData = await response.blob();
 
     console.log("Putting on IPFS");
-    
+
     const formData = new FormData();
     formData.append('file', blobData);
     const pinataMetadata = JSON.stringify({
@@ -58,15 +68,18 @@ export default function Home() {
       }
     });
     const helloIMG = `https://ipfs.io/ipfs/${res.data.IpfsHash}`;
-    console.log('IPFS: ',helloIMG);
+    console.log('IPFS: ', helloIMG);
     setHash(res.data.IpfsHash);
     setImageUrl(helloIMG);
   }
 
+  const {loading, error, data} = useQuery(QUERY);
+  console.log(data)
+
   return (
     <div>
       <input onChange={handleInputChange} />
-      <button className="ml-1" onClick={hello}>Mint</button>
+      <button className="ml-1">Mint</button>
     </div>
   )
 }

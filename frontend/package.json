@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@apollo/client": "^3.8.5",
     "axios": "^1.5.1",
     "next": "13.5.4",
     "react": "^18",
