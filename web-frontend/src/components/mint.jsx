@@ -9,14 +9,14 @@ import axios from 'axios';
 
 
 function Test({ chainId, owner }) {
-
+  
   const [inputtext, setInputtext] = useState("")
   const [imageurl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hash, setHash] = useState("");
 
-  const [tokenUri, setTokenUri] = useState('');
-  const [tokenId, setTokenID] = useState(3);
+  const [tokenUri, setTokenUri] = useState('ipfs://demo');
+  const [tokenId, setTokenID] = useState(1);
   const [error, setError] = useState('');
 
   const [approveId, setApproveId] = useState('');
@@ -50,7 +50,6 @@ function Test({ chainId, owner }) {
 
     }).then(r => console.log('Minted'));
   }
-
   const APPROVE_NFT = gql
   `
   mutation Approve{
