@@ -7,8 +7,8 @@ import {
 } from "@apollo/client";
 import axios from 'axios';
 
-
-function Test({ chainId, owner }) {
+function Mint({ chainId, owner }) {
+  console.log("SSS")
   
   const [inputtext, setInputtext] = useState("")
   const [imageurl, setImageUrl] = useState("");
@@ -142,4 +142,4 @@ function Test({ chainId, owner }) {
   );
 }
 
-export default Test;
+export default Mint;

@@ -1,9 +1,8 @@
-import Test from "./components/mint"
-
+import List from "./components/list";
 function App({ chainId, owner }) {
 
   return (
-    <Test chainId={chainId} owner={owner}/>
+    <List chainId={chainId} owner={owner}/>
   );
 }
 
