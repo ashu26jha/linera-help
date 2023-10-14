@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import {
   gql,
   useMutation,
-  useLazyQuery,
-  useSubscription,
 } from "@apollo/client";
 import axios from 'axios';
 import Navbar from "./navbar";

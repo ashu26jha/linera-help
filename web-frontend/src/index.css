@@ -67,6 +67,7 @@ body {
   border-radius: 20px;
   height: 400px;
   margin: auto;
+  margin-top: 20px;
 }
 input{
   color: black;
@@ -94,4 +95,18 @@ button:hover {
 }
 .spinner{
   margin: auto;
+}
+
+.approve{
+  margin-top: 20px;
+  text-align: center;
+}
+
+h1{
+  font-weight: 500;
+  font-size: 20px;
+  margin-top: 30px;
+}
+.approve-btn{
+  font-size: 20px;
 }
