@@ -5,110 +5,35 @@ import {
   useLazyQuery,
   useSubscription,
 } from "@apollo/client";
-import tw from "tailwind-styled-components";
-
-const GET_BALANCE = gql`
-  query Accounts($owner: AccountOwner) {
-    accounts(accountOwner: $owner)
-  }
-`;
 
 const TOKEN_QUERY = gql`
-  query{
+  query Hello {
     tokenOwner(u64:0)
   }
 `
-
-const MAKE_PAYMENT = gql`
-  mutation Transfer($owner: AccountOwner, $amount: Amount, $targetAccount: Account) {
-    transfer(owner: $owner, amount: $amount, targetAccount: $targetAccount)
-  }
-`;
-
-const NOTIFICATION_SUBSCRIPTION = gql`
-  subscription Notifications($chainId: ID!) {
-    notifications(chainId: $chainId)
-  }
-`;
-
-// Styled components
-const Container = tw.div`
-  max-w-2xl mx-auto my-8
-`;
-
-const Card = tw.div`
-  bg-white rounded-lg shadow-md p-6 mb-6
-`;
-
-const Label = tw.label`
-  block mb-2 text-gray-700 font-bold
-`;
-
-const Input = tw.input`
-  w-full border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline
-`;
-
-const Button = tw.button`
-  bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline
-`;
-
-const ErrorMessage = tw.div`
-  text-red-500 text-sm italic mt-2
-`;
-
-// App component
 function Test({ chainId, owner }) {
 
   let [
-    balanceQuery,
-    { data: balanceData, called: balanceCalled, error: balanceError },
-  ] = useLazyQuery(GET_BALANCE, {
-    fetchPolicy: "network-only",
-    variables: { owner: `User:${owner}` },
-  });
+    TokenQuery,
+    { data: tokenData, called: tokenDataCalled },
+  ] = useLazyQuery(TOKEN_QUERY);
 
-  if (!balanceCalled) {
-    void balanceQuery();
+  if(!tokenDataCalled){
+    void TokenQuery();
+    console.log(tokenData)
   }
 
-
-  let [
-    TOKEN_QUERY,
-    { data: tokenData, called: tokenDataCalled, error: tokenDataError },
-  ] = useLazyQuery(GET_BALANCE, {
-    fetchPolicy: "network-only",
-    variables: {},
-  });
-
-  
-
-  
+  function Help(){
+    console.log(tokenData)
+  }
 
   // Render
   return (
-    <Container>
-      
-      <Label htmlFor="recipient">Account: {owner}</Label>
-      <Card>
-        <h1 className="text-2xl font-bold mb-2">Your Balance</h1>
-        {balanceData ? (
-          <p className="text-3xl font-bold">
-            {balanceData.accounts == null
-              ? 0
-              : parseInt(balanceData.accounts).toLocaleString()}
-          </p>
-        ) : (
-          <p>Loading...</p>
-        )}
-        {balanceError && (
-          <ErrorMessage>Failed to pull balance. Re-trying...</ErrorMessage>
-        )}
-      </Card>
-
-      {tokenData}
-
-      
-    </Container>
+    <div>
+      <button onClick={Help}>
+        Test
+      </button>
+    </div>      
   );
 }
 
