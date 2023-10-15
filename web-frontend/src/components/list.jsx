@@ -28,7 +28,7 @@ function List({ chainId, owner }) {
         onError: (error) => setError("Error: " + error.networkError.result),
     });
 
-    async function handleListNFT (event) {
+    async function handleListNFT(event) {
         event.preventDefault();
         listNFT({
 
@@ -37,11 +37,17 @@ function List({ chainId, owner }) {
 
     return (
         <div>
-            <Navbar/>
-            <input onChange={((e) => { setPrice(e.target.value) })} />
-            <button onClick={handleListNFT}>
-                List NFT
-            </button>
+            <Navbar />
+            <div className="list">
+                <input onChange={((e) => { setTokenID(e.target.value) })} placeholder="Token ID" />
+                <br/>
+                <input onChange={((e) => { setPrice(e.target.value) })} placeholder="Price" />
+                <br/>
+                <button onClick={handleListNFT}>
+                    List NFT
+                </button>
+            </div>
+
         </div>
     )
 }

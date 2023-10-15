@@ -82,17 +82,22 @@ function Collection({ chainId, owner }) {
     return (
         <div>
             <Navbar />
-                <img src={tokenURL} className="image-display" />
-            <div className="approve">
-                <h1>Token ID : {count}</h1>
-                <h1>
-                Application ID: <input onChange={((e) => { setAppID(e.target.value) })} />
-                </h1> 
-                <br />
-                <button onClick={handleApprove} className="approve-btn">
-                    Approve
-                </button>
-            </div>
+            {tokenURL !== '' && (
+                <div>
+                    <img src={tokenURL} className="image-display" />
+                    <div className="approve">
+                        <h1>Token ID : {count}</h1>
+                        <h1>
+                            Application ID: <input onChange={((e) => { setAppID(e.target.value) })} />
+                        </h1>
+                        <br />
+                        <button onClick={handleApprove} className="approve-btn">
+                            Approve
+                        </button>
+                    </div>
+                </div>
+            )}
+
 
         </div>
     )
