@@ -118,3 +118,13 @@ input{
   margin-top: 10px;
   border-radius: 10px;
 }
+.price{
+  margin-top: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+.owner{
+  /* margin-top: 10px; */
+  text-align: center;
+  font-weight: 500;
+}
