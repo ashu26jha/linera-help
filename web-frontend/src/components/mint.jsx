@@ -49,28 +49,6 @@ function Mint({ chainId, owner }) {
 
     }).then(r => console.log('Minted'));
   }
-  const APPROVE_NFT = gql
-    `
-  mutation Approve{
-    approve(
-      tokenId: 3,
-      approvedFor: "Application:e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65000000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65020000000000000000000000"
-    )
-  }
-  `;
-
-  const [approveNFT, { loading, approvingNFT }] = useMutation(APPROVE_NFT, {
-    onCompleted: () => {
-    },
-    onError: (error) => setError("Error: " + error.networkError.result),
-  })
-
-  const handleApprove = (event) => {
-    event.preventDefault();
-    approveNFT({
-
-    }).then(r => console.log('Approved'));
-  }
 
   async function hello() {
     setIsLoading(true);
@@ -119,7 +97,6 @@ function Mint({ chainId, owner }) {
     setHash(res.data.IpfsHash);
     setImageUrl(helloIMG);
     setIsLoading(false);
-
   }
 
   // Render
@@ -133,9 +110,7 @@ function Mint({ chainId, owner }) {
           Generate
         </button>
         
-
         {isLoading && (<img width={100} height={100} src="spinner.gif" className="spinner"/>)}
-
   
         <img src={imageurl} className="image-display" />
         {imageurl !== "" && (
@@ -144,12 +119,6 @@ function Mint({ chainId, owner }) {
           </button>
         )}
       </div>
-
-      <input placeholder="Application ID" onChange={((e) => { setApproveId(e.target.value) })} />
-      <button onClick={handleApprove}>
-        Approve
-      </button>
-
     </div>
   );
 }

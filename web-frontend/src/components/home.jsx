@@ -1,6 +1,5 @@
 import Navbar from "./navbar"
 function Home () {
-    console.log("S")
     return (
         <div>
             <Navbar/>

@@ -14,6 +14,7 @@ pub struct MarketPlace {
     listing_sold: MapView<u64, bool>,
     listing_owner: MapView<u64, FungibleAccountOwner>,
     listing_chain: MapView<u64, ChainId>,
+    lisitng_uri: MapView<u64, String>,
 }
 
 impl MarketPlace {
@@ -23,6 +24,7 @@ impl MarketPlace {
         token_id: u64,
         owner: FungibleAccountOwner,
         chain_id: ChainId,
+        token_uri: String,
     ) {
         let curr_count = self.listing_counter.get().clone();
         // Add price
@@ -47,6 +49,10 @@ impl MarketPlace {
         self.listing_chain
             .insert(&curr_count, chain_id)
             .expect("Couldn't insert chain ID");
+
+        self.lisitng_uri
+            .insert(&curr_count, token_uri)
+            .expect("Couldn't insert URI");
 
         self.listing_counter.set(curr_count + 1);
     }

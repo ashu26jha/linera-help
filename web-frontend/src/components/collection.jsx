@@ -2,7 +2,6 @@ import {
     gql,
     useMutation,
     useLazyQuery,
-    useSubscription,
 } from "@apollo/client";
 import { useEffect, useState } from "react";
 import Navbar from "./navbar";
@@ -58,14 +57,14 @@ function Collection({ chainId, owner }) {
 
 
     const APPROVE_NFT = gql
-        `
-  mutation Approve{
-    approve(
-      tokenId: ${count},
-      approvedFor: "Application:${appID}"
-    )
-  }
-  `;
+    `
+    mutation Approve{
+        approve(
+        tokenId: ${count},
+        approvedFor: "Application:${appID}"
+        )
+    }
+    `;
 
     const [approveNFT, { loading, approvingNFT }] = useMutation(APPROVE_NFT, {
         onCompleted: () => {

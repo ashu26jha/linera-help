@@ -52,8 +52,10 @@ impl Contract for MarketPlace {
                 price,
                 owner,
                 chain_id,
+                token_uri,
             } => {
-                self.add_listings(price, token_id, owner, chain_id).await;
+                self.add_listings(price, token_id, owner, chain_id, token_uri)
+                    .await;
                 Ok(ExecutionResult::default())
             }
             Operation::FetchBalance {
@@ -219,26 +221,6 @@ impl MarketPlace {
             .await?;
         Ok(())
     }
-
-    // DELETE THIS AFTER THE CHECK
-
-    // async fn transfer_money(
-    //     &mut self,
-    //     buyer: FungibleAccountOwner,
-    //     account: Account,
-    //     price: Amount,
-    // ) -> Result<(), Error> {
-    //     let destination = Destination::Account(account);
-    //     let call = fungible::ApplicationCall::Transfer {
-    //         owner: buyer,
-    //         amount: price,
-    //         destination: destination,
-    //     };
-
-    //     self.call_application(true, Self::fungible_id()?, &call, vec![])
-    //         .await?;
-    //     Ok(())
-    // }
 }
 #[derive(Debug, Error)]
 pub enum Error {

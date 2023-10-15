@@ -37,6 +37,7 @@ pub enum Operation {
         price: Amount,
         owner: FungibleAccountOwner,
         chain_id: ChainId,
+        token_uri: String,
     },
 
     Buy {
