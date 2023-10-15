@@ -81,6 +81,7 @@ function Collection({ chainId, owner }) {
     return (
         <div>
             <Navbar />
+            Chain ID: {chainId.substring(0,6)+'...'+chainId.substring(chainId.length-3)}
             {tokenURL !== '' && (
                 <div>
                     <img src={tokenURL} className="image-display" />

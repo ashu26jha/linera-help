@@ -15,7 +15,7 @@ function Mint({ chainId, owner }) {
   const [hash, setHash] = useState("");
 
   const [tokenUri, setTokenUri] = useState('ipfs://demo');
-  const [tokenId, setTokenID] = useState(1);
+  const [tokenId, setTokenID] = useState(0);
   const [error, setError] = useState('');
 
   const [approveId, setApproveId] = useState('');
@@ -39,6 +39,7 @@ function Mint({ chainId, owner }) {
 
   const [mintNFT, { loading: paymentLoading }] = useMutation(MINT_NFT, {
     onCompleted: () => {
+      console.log("Completed")
     },
     onError: (error) => setError("Error: " + error.networkError.result),
   });
@@ -109,16 +110,28 @@ function Mint({ chainId, owner }) {
         <button onClick={hello}>
           Generate
         </button>
-        
-        {isLoading && (<img width={100} height={100} src="spinner.gif" className="spinner"/>)}
-  
+
+        {isLoading && (<img width={100} height={100} src="spinner.gif" className="spinner" />)}
         <img src={imageurl} className="image-display" />
         {imageurl !== "" && (
           <button onClick={handleSubmit}>
             Mint
           </button>
         )}
+        <div className="banner">
+        <div className="banner-text">
+          Write a prompt
+        </div>
+        <div className="banner-text">
+          &
+        </div>
+        <div className="banner-text">
+          Mint the NFT
+        </div>
       </div>
+        
+      </div>
+      
     </div>
   );
 }

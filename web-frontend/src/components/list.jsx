@@ -19,7 +19,7 @@ function List({ chainId, owner }) {
             price:"${price}",
             owner:"User:${owner}",
             chainId:"${chainId}",
-            token_uri:"${token_uri}",
+            tokenUri:"${token_uri}",
             )
         }
     `
@@ -45,7 +45,7 @@ function List({ chainId, owner }) {
                 <br/>
                 <input onChange={((e) => { setPrice(e.target.value) })} placeholder="Price" />
                 <br/>
-                <input onChange={((e) => { setTokenUri(e.target.value) })} placeholder="Price" />
+                <input onChange={((e) => { setTokenUri(e.target.value) })} placeholder="Token URI" />
                 <br/>
                 <button onClick={handleListNFT}>
                     List NFT
