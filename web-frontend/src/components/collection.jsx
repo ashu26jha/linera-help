@@ -49,9 +49,10 @@ function Collection({ chainId, owner }) {
 
     useEffect(() => {
         if (URIdata != null) {
-            const tokenURI = URIdata.tokenUri.replace(/^ipfs:\/\//, '');
-            const URL = `https://ipfs.io/ipfs/${tokenURI}`;
-            setTokenURL(URL)
+            
+            // const tokenURI = URIdata.tokenUri.replace(/^ipfs:\/\//, '');
+            // const URL = `https://ipfs.io/ipfs/${tokenURI}`;
+            // setTokenURL(URL)
         }
     }, [URIdata])
 
@@ -78,11 +79,16 @@ function Collection({ chainId, owner }) {
         }).then(r => console.log('Approved'));
     }
 
+    function hello (){
+        console.log(URIdata)
+    }
+
     return (
         <div>
+            
             <Navbar />
             Chain ID: {chainId.substring(0,6)+'...'+chainId.substring(chainId.length-3)}
-            {tokenURL !== '' && (
+            {/* {tokenURL !== '' && ( */}
                 <div>
                     <img src={tokenURL} className="image-display" />
                     <div className="approve">
@@ -94,9 +100,10 @@ function Collection({ chainId, owner }) {
                         <button onClick={handleApprove} className="approve-btn">
                             Approve
                         </button>
+                        <button onClick={hello}>Test</button>
                     </div>
                 </div>
-            )}
+            {/* )} */}
 
 
         </div>

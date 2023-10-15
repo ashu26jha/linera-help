@@ -4,7 +4,7 @@ FUNGIBLE:
 ```
 linera project publish-and-create --json-argument '{ 
     "accounts": {
-        "User:42484e0b7df12d9adbace18a48e38d26047cd77036ee384a33a41d9f67d318d3": "10000."
+        "User:8b6b11102aea5bb5534edd49fd4f2913783ecf18d24c4df4e351e5c934be7562": "10000."
     } 
 }'
 ```
