@@ -1,3 +1,5 @@
+Make sure to have NFT the following applications deployed as these applications are required to run the marketplace. Use the following commands. Application IDs are deterministic too
+
 NFT: `linera project publish-and-create --json-argument="null"`
 
 FUNGIBLE: 
