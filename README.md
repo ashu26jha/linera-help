@@ -20,7 +20,7 @@ In the similar fashion NFT is transfered, making changes in both seller and buye
 2. Export wallet and storage to other terminals
 3. `linera wallet show` Let the owner of main chain be User1
 4. Publish and create `fungible` application using and copy its application ID let it fungible_app_id
-   ```
+   ``` bash
    linera project publish-and-create --json-argument '{
    
     "accounts": {
@@ -28,14 +28,18 @@ In the similar fashion NFT is transfered, making changes in both seller and buye
         "User1": "10000."
    
     }
-    }' ```
+    }'
+   ```
    
 5. Publish and create `nft` application using ```linera project publish-and-create --json-argument="null"```
 
-6. Now publish and create `marketplace` application using `linera project publish-and-create --json-argument="null" --json-parameters "{\"fungible_app_id\":\"$fungible_app_id\",\"nft_app_id\":\"$nft_app_id\"}" --required-application-ids $fungible_app_id --required-application-ids $nft_app_id`
+6. Now publish and create `marketplace` application using
+   ```bash
+   linera project publish-and-create --json-argument="null" --json-parameters "{\"fungible_app_id\":\"$fungible_app_id\",\"nft_app_id\":\"$nft_app_id\"}" --required-application-ids $fungible_app_id --required-application-ids $nft_app_id
+   ```
 
-7. Now to  start frontend, npm start
+8. Now to  start frontend, npm start
 
-8. Make sure to have changed the chain ID, owner in `index.js`
+9. Make sure to have changed the chain ID, owner in `index.js`
 
-9. Also from graphql perform a mutation `requestApplication` to get the application into another chain, and perform cross-chain application
+10. Also from graphql perform a mutation `requestApplication` to get the application into another chain, and perform cross-chain application
